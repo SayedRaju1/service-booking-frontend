@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Building2 } from "lucide-react";
 
@@ -13,6 +13,7 @@ import { Business } from "@/types/api";
 
 export default function BusinessesPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [filters, setFilters] = useState({
     category: "",
     location: "",
@@ -20,17 +21,26 @@ export default function BusinessesPage() {
     sortOrder: "desc" as const,
   });
 
-  // Fetch businesses
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Fetch businesses with enhanced search
   const {
     data: businessesData,
     isLoading,
     error,
     refetch,
   } = useQuery({
-    queryKey: ["businesses", searchQuery, filters],
+    queryKey: ["businesses", debouncedSearchQuery, filters],
     queryFn: () => {
-      if (searchQuery) {
-        return businessApi.searchBusinesses(searchQuery, {
+      if (debouncedSearchQuery.trim()) {
+        return businessApi.searchBusinesses(debouncedSearchQuery.trim(), {
           page: 1,
           limit: 20,
           ...filters,
@@ -46,23 +56,41 @@ export default function BusinessesPage() {
   });
 
   // Fetch categories
-  const { data: categoriesData } = useQuery({
+  const { data: categoriesData, isLoading: categoriesLoading } = useQuery({
     queryKey: ["categories"],
     queryFn: () => serviceCategoriesApi.getCategories(),
   });
 
-  const handleSearch = (query: string) => {
+  const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
-  };
+  }, []);
 
-  const handleFilterChange = (newFilters: {
-    category: string;
-    location: string;
-    sortBy: string;
-    sortOrder: "asc" | "desc";
-  }) => {
-    setFilters(newFilters);
-  };
+  const handleFilterChange = useCallback(
+    (newFilters: {
+      category: string;
+      location: string;
+      sortBy: string;
+      sortOrder: "asc" | "desc";
+    }) => {
+      // Convert "all" category to empty string for API
+      const apiFilters = {
+        ...newFilters,
+        category: newFilters.category === "all" ? "" : newFilters.category,
+      };
+      setFilters(apiFilters);
+    },
+    []
+  );
+
+  const clearAllFilters = useCallback(() => {
+    setSearchQuery("");
+    setFilters({
+      category: "",
+      location: "",
+      sortBy: "rating",
+      sortOrder: "desc",
+    });
+  }, []);
 
   // The API response structure is: { success: true, data: { businesses: [...], pagination: {...} } }
   const businesses = businessesData?.data?.businesses || [];
@@ -91,7 +119,7 @@ export default function BusinessesPage() {
             onSearch={handleSearch}
             onFilterChange={handleFilterChange}
             categories={categories}
-            isLoading={isLoading}
+            isLoading={isLoading || categoriesLoading}
           />
         </div>
 
@@ -101,7 +129,11 @@ export default function BusinessesPage() {
           {isLoading && (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-              <span className="ml-2 text-gray-600">Loading businesses...</span>
+              <span className="ml-2 text-gray-600">
+                {debouncedSearchQuery
+                  ? "Searching businesses..."
+                  : "Loading businesses..."}
+              </span>
             </div>
           )}
 
@@ -126,8 +158,18 @@ export default function BusinessesPage() {
               <p className="text-gray-600">
                 {businesses.length}{" "}
                 {businesses.length === 1 ? "business" : "businesses"} found
-                {searchQuery && ` for "${searchQuery}"`}
+                {debouncedSearchQuery && ` for "${debouncedSearchQuery}"`}
               </p>
+              {(debouncedSearchQuery ||
+                filters.category ||
+                filters.location) && (
+                <button
+                  onClick={clearAllFilters}
+                  className="text-sm text-blue-600 hover:text-blue-800"
+                >
+                  Clear all filters
+                </button>
+              )}
             </div>
           )}
 
@@ -148,20 +190,12 @@ export default function BusinessesPage() {
                 No businesses found
               </h3>
               <p className="text-gray-600 mb-4">
-                {searchQuery
-                  ? `No businesses match your search for "${searchQuery}". Try adjusting your search terms or filters.`
+                {debouncedSearchQuery
+                  ? `No businesses match your search for "${debouncedSearchQuery}". Try adjusting your search terms or filters.`
                   : "No businesses are available in this area. Try adjusting your filters or location."}
               </p>
               <button
-                onClick={() => {
-                  setSearchQuery("");
-                  setFilters({
-                    category: "",
-                    location: "",
-                    sortBy: "rating",
-                    sortOrder: "desc",
-                  });
-                }}
+                onClick={clearAllFilters}
                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
               >
                 Clear filters

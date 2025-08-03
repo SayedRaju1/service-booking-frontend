@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Filter, X } from "lucide-react";
+import { Search, Filter, X, Star } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Slider } from "@/components/ui/slider";
 
 interface SearchFiltersProps {
   onSearch: (query: string) => void;
@@ -26,6 +27,8 @@ interface FilterState {
   location: string;
   sortBy: string;
   sortOrder: "asc" | "desc";
+  minRating: number;
+  maxPrice?: number;
 }
 
 export function SearchFilters({
@@ -36,10 +39,11 @@ export function SearchFilters({
 }: SearchFiltersProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<FilterState>({
-    category: "",
+    category: "all",
     location: "",
     sortBy: "rating",
     sortOrder: "desc",
+    minRating: 0,
   });
   const [showFilters, setShowFilters] = useState(false);
 
@@ -47,7 +51,10 @@ export function SearchFilters({
     onSearch(searchQuery);
   };
 
-  const handleFilterChange = (key: keyof FilterState, value: string) => {
+  const handleFilterChange = (
+    key: keyof FilterState,
+    value: string | number
+  ) => {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
     onFilterChange(newFilters);
@@ -55,17 +62,21 @@ export function SearchFilters({
 
   const clearFilters = () => {
     const clearedFilters = {
-      category: "",
+      category: "all",
       location: "",
       sortBy: "rating",
       sortOrder: "desc" as const,
+      minRating: 0,
     };
     setFilters(clearedFilters);
     onFilterChange(clearedFilters);
   };
 
   const hasActiveFilters =
-    filters.category || filters.location || filters.sortBy !== "rating";
+    filters.category !== "all" ||
+    filters.location ||
+    filters.sortBy !== "rating" ||
+    filters.minRating > 0;
 
   return (
     <div className="space-y-4">
@@ -118,7 +129,7 @@ export function SearchFilters({
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Category Filter */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">
@@ -132,12 +143,20 @@ export function SearchFilters({
                   <SelectValue placeholder="All categories" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All categories</SelectItem>
-                  {categories.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category.charAt(0).toUpperCase() + category.slice(1)}
+                  <SelectItem value="all">All categories</SelectItem>
+                  {Array.isArray(categories) && categories.length > 0 ? (
+                    categories.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category.charAt(0).toUpperCase() + category.slice(1)}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="loading" disabled>
+                      {isLoading
+                        ? "Loading categories..."
+                        : "No categories available"}
                     </SelectItem>
-                  ))}
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -174,17 +193,51 @@ export function SearchFilters({
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Rating Filter */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Minimum Rating
+              </label>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star
+                      key={star}
+                      className={`h-4 w-4 ${
+                        star <= filters.minRating
+                          ? "text-yellow-400 fill-current"
+                          : "text-gray-300"
+                      }`}
+                    />
+                  ))}
+                </div>
+                <span className="text-sm text-gray-600">
+                  {filters.minRating}+
+                </span>
+              </div>
+              <Slider
+                value={[filters.minRating]}
+                onValueChange={(value) =>
+                  handleFilterChange("minRating", value[0])
+                }
+                max={5}
+                min={0}
+                step={1}
+                className="w-full"
+              />
+            </div>
           </div>
 
           {/* Active Filters Display */}
           {hasActiveFilters && (
             <div className="flex flex-wrap gap-2 pt-2">
-              {filters.category && (
+              {filters.category !== "all" && (
                 <Badge variant="secondary" className="flex items-center gap-1">
                   Category: {filters.category}
                   <X
                     className="h-3 w-3 cursor-pointer"
-                    onClick={() => handleFilterChange("category", "")}
+                    onClick={() => handleFilterChange("category", "all")}
                   />
                 </Badge>
               )}
@@ -203,6 +256,15 @@ export function SearchFilters({
                   <X
                     className="h-3 w-3 cursor-pointer"
                     onClick={() => handleFilterChange("sortBy", "rating")}
+                  />
+                </Badge>
+              )}
+              {filters.minRating > 0 && (
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  Rating: {filters.minRating}+
+                  <X
+                    className="h-3 w-3 cursor-pointer"
+                    onClick={() => handleFilterChange("minRating", 0)}
                   />
                 </Badge>
               )}
