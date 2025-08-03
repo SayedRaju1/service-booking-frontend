@@ -47,9 +47,10 @@ export interface User {
 // Business types
 export interface Business {
   _id: string;
+  id?: string; // Some APIs return both _id and id
   name: string;
   description: string;
-  owner: string; // User ID
+  owner: string | { _id: string; name: string }; // Can be string ID or populated object
   category:
     | "salon"
     | "dental"
@@ -136,6 +137,55 @@ export interface RegisterRequest {
 export interface AuthResponse {
   user: User;
   token: string;
+}
+
+// Service Category types
+export interface ServiceCategory {
+  _id: string;
+  name: string;
+  description?: string;
+  parent?: string; // Parent category ID
+  business?: string; // Business ID if category is business-specific
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Service Category Request types
+export interface CreateServiceCategoryRequest {
+  name: string;
+  description?: string;
+  parent?: string;
+  business?: string;
+}
+
+export interface UpdateServiceCategoryRequest {
+  name?: string;
+  description?: string;
+  parent?: string;
+  business?: string;
+  isActive?: boolean;
+}
+
+// Service Request types
+export interface CreateServiceRequest {
+  name: string;
+  description: string;
+  duration: number;
+  price: number;
+  category: string;
+  business: string;
+  staff?: string[];
+}
+
+export interface UpdateServiceRequest {
+  name?: string;
+  description?: string;
+  duration?: number;
+  price?: number;
+  category?: string;
+  staff?: string[];
+  isActive?: boolean;
 }
 
 // API Error types
