@@ -1,5 +1,5 @@
 // Common API response structure
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   message: string;
   data?: T;
@@ -25,7 +25,7 @@ export interface User {
   name: string;
   email: string;
   phone?: string;
-  role: 'customer' | 'service_provider' | 'admin';
+  role: "customer" | "service_provider" | "admin";
   isVerified: boolean;
   profilePicture?: string;
   address?: {
@@ -50,7 +50,15 @@ export interface Business {
   name: string;
   description: string;
   owner: string; // User ID
-  category: 'salon' | 'dental' | 'beauty' | 'spa' | 'consulting' | 'fitness' | 'medical' | 'other';
+  category:
+    | "salon"
+    | "dental"
+    | "beauty"
+    | "spa"
+    | "consulting"
+    | "fitness"
+    | "medical"
+    | "other";
   address: {
     street: string;
     city: string;
@@ -103,9 +111,9 @@ export interface Booking {
   staff?: string; // Staff ID
   appointmentDate: string;
   appointmentTime: string;
-  status: 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'no_show';
+  status: "pending" | "confirmed" | "cancelled" | "completed" | "no_show";
   totalAmount: number;
-  paymentStatus: 'pending' | 'paid' | 'refunded';
+  paymentStatus: "pending" | "paid" | "refunded";
   notes?: string;
   createdAt: string;
   updatedAt: string;
@@ -122,7 +130,7 @@ export interface RegisterRequest {
   email: string;
   password: string;
   phone?: string;
-  role?: 'customer' | 'service_provider' | 'admin';
+  role?: "customer" | "service_provider" | "admin";
 }
 
 export interface AuthResponse {
@@ -135,4 +143,4 @@ export interface ApiError {
   message: string;
   status: number;
   code?: string;
-} 
+}

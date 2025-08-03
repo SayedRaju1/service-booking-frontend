@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { useState } from 'react';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { useState } from "react";
 
 interface ProvidersProps {
   children: React.ReactNode;
@@ -16,9 +16,14 @@ export function Providers({ children }: ProvidersProps) {
           queries: {
             staleTime: 60 * 1000, // 1 minute
             gcTime: 10 * 60 * 1000, // 10 minutes
-            retry: (failureCount, error: any) => {
+            retry: (failureCount, error: unknown) => {
               // Don't retry on 4xx errors
-              if (error?.response?.status >= 400 && error?.response?.status < 500) {
+              const axiosError = error as { response?: { status?: number } };
+              if (
+                axiosError?.response?.status &&
+                axiosError.response.status >= 400 &&
+                axiosError.response.status < 500
+              ) {
                 return false;
               }
               return failureCount < 3;
@@ -37,4 +42,4 @@ export function Providers({ children }: ProvidersProps) {
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
-} 
+}
