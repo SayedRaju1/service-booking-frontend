@@ -6,6 +6,20 @@ export interface ApiResponse<T = unknown> {
   error?: string;
 }
 
+// Specific response types for different endpoints
+export interface ServiceResponse {
+  service: Service;
+}
+
+export interface BusinessResponse {
+  business: Business;
+}
+
+export interface BusinessServicesResponse {
+  services: Service[];
+  businessId: string;
+}
+
 // Pagination types
 export interface PaginationMeta {
   page: number;
@@ -105,7 +119,29 @@ export interface Service {
         icon?: string;
         color?: string;
       };
-  business: string | { _id: string; name: string; address?: unknown };
+  business:
+    | string
+    | {
+        _id: string;
+        id?: string;
+        name: string;
+        description?: string;
+        address?: {
+          street: string;
+          city: string;
+          state: string;
+          zipCode: string;
+          country: string;
+        };
+        contact?: {
+          phone: string;
+          email: string;
+          website?: string;
+        };
+        rating?: number;
+        totalReviews?: number;
+        averageRating?: number;
+      };
   staff?: string[]; // Staff IDs
   isActive?: boolean;
   isFeatured?: boolean;
@@ -119,7 +155,6 @@ export interface Service {
   durationFormatted?: string;
   priceFormatted?: string;
   totalTime?: number;
-  isActive: boolean;
   createdAt: string;
   updatedAt: string;
 }

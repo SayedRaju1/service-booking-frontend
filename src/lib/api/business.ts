@@ -1,5 +1,10 @@
 import apiClient from "./client";
-import { ApiResponse, Business, PaginatedResponse } from "@/types/api";
+import {
+  ApiResponse,
+  Business,
+  PaginatedResponse,
+  BusinessResponse,
+} from "@/types/api";
 
 // Business API endpoints
 export const businessApi = {
@@ -20,8 +25,10 @@ export const businessApi = {
   },
 
   // Get business by ID
-  getBusinessById: async (id: string): Promise<ApiResponse<Business>> => {
-    const response = await apiClient.get<ApiResponse<Business>>(
+  getBusinessById: async (
+    id: string
+  ): Promise<ApiResponse<BusinessResponse>> => {
+    const response = await apiClient.get<ApiResponse<BusinessResponse>>(
       `/businesses/${id}`
     );
     return response.data;

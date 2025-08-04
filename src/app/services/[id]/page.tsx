@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/card";
 import { servicesApi } from "@/lib/api/services";
 import { businessApi } from "@/lib/api/business";
+import { ServiceResponse } from "@/types/api";
 
 export default function ServiceDetailPage() {
   const params = useParams();
@@ -42,20 +43,11 @@ export default function ServiceDetailPage() {
     enabled: !!serviceId,
   });
 
-  const service = serviceData?.data;
+  const service = serviceData?.data?.service;
 
-  // Fetch business details if service has business info
-  const businessId =
-    typeof service?.business === "string"
-      ? service.business
-      : service?.business?._id;
-  const { data: businessData } = useQuery({
-    queryKey: ["business", businessId],
-    queryFn: () => businessApi.getBusinessById(businessId),
-    enabled: !!businessId,
-  });
-
-  const business = businessData?.data;
+  // Use business data directly from service response
+  const business =
+    typeof service?.business === "string" ? null : service?.business;
 
   if (isLoading) {
     return (
@@ -137,7 +129,7 @@ export default function ServiceDetailPage() {
                   <Badge variant="secondary" className="mb-3">
                     {typeof service.category === "string"
                       ? service.category
-                      : service.category.name}
+                      : service.category?.name || "Uncategorized"}
                   </Badge>
                 </div>
                 <div className="text-right">
@@ -224,18 +216,20 @@ export default function ServiceDetailPage() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex items-center text-gray-600">
-                    <MapPin className="h-5 w-5 mr-3 text-gray-400" />
-                    <div>
-                      <div className="font-medium">
-                        {business.address.street}
-                      </div>
-                      <div className="text-sm">
-                        {business.address.city}, {business.address.state}{" "}
-                        {business.address.zipCode}
+                  {business.address && (
+                    <div className="flex items-center text-gray-600">
+                      <MapPin className="h-5 w-5 mr-3 text-gray-400" />
+                      <div>
+                        <div className="font-medium">
+                          {business.address.street}
+                        </div>
+                        <div className="text-sm">
+                          {business.address.city}, {business.address.state}{" "}
+                          {business.address.zipCode}
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
 
                   {business.contact?.phone && (
                     <div className="flex items-center text-gray-600">
@@ -260,7 +254,7 @@ export default function ServiceDetailPage() {
                 </div>
 
                 <div className="mt-4">
-                  <Link href={`/businesses/${business._id}`}>
+                  <Link href={`/businesses/${business.id || business._id}`}>
                     <Button variant="outline" size="sm">
                       View Business Details
                     </Button>

@@ -5,6 +5,8 @@ import {
   PaginatedResponse,
   CreateServiceRequest,
   UpdateServiceRequest,
+  ServiceResponse,
+  BusinessServicesResponse,
 } from "@/types/api";
 
 // Services API endpoints
@@ -26,8 +28,8 @@ export const servicesApi = {
   },
 
   // Get service by ID
-  getServiceById: async (id: string): Promise<ApiResponse<Service>> => {
-    const response = await apiClient.get<ApiResponse<Service>>(
+  getServiceById: async (id: string): Promise<ApiResponse<ServiceResponse>> => {
+    const response = await apiClient.get<ApiResponse<ServiceResponse>>(
       `/services/${id}`
     );
     return response.data;
@@ -61,10 +63,11 @@ export const servicesApi = {
       sortBy?: string;
       sortOrder?: "asc" | "desc";
     }
-  ): Promise<ApiResponse<PaginatedResponse<Service>>> => {
-    const response = await apiClient.get<
-      ApiResponse<PaginatedResponse<Service>>
-    >(`/services/business/${businessId}`, { params });
+  ): Promise<ApiResponse<BusinessServicesResponse>> => {
+    const response = await apiClient.get<ApiResponse<BusinessServicesResponse>>(
+      `/services/business/${businessId}`,
+      { params }
+    );
     return response.data;
   },
 

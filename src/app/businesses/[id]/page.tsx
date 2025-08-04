@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { businessApi } from "@/lib/api/business";
+import { servicesApi } from "@/lib/api/services";
 
 export default function BusinessDetailPage() {
   const params = useParams();
@@ -36,7 +37,16 @@ export default function BusinessDetailPage() {
     enabled: !!businessId,
   });
 
-  const business = businessData?.data;
+  const business = businessData?.data?.business;
+
+  // Fetch services for this business
+  const { data: servicesData, isLoading: servicesLoading } = useQuery({
+    queryKey: ["business-services", businessId],
+    queryFn: () => servicesApi.getServicesByBusiness(businessId, { limit: 6 }),
+    enabled: !!businessId,
+  });
+
+  const services = servicesData?.data?.services || [];
 
   if (isLoading) {
     return (
@@ -223,24 +233,94 @@ export default function BusinessDetailPage() {
 
         {/* Services Section */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">
-            Services Offered
-          </h2>
-          <div className="text-center py-8">
-            <div className="text-gray-500 mb-4">
-              Services will be available soon
-            </div>
-            <div className="flex gap-2 justify-center">
-              <Button variant="outline" asChild>
-                <Link href={`/services?businessId=${business._id}`}>
-                  View All Services
-                </Link>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-900">
+              Services Offered
+            </h2>
+            <Link href={`/services?businessId=${business._id}`}>
+              <Button variant="outline" size="sm">
+                View All Services
               </Button>
+            </Link>
+          </div>
+
+          {servicesLoading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <span className="text-gray-600">Loading services...</span>
+            </div>
+          ) : services.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {services.map((service) => (
+                <Card
+                  key={service._id}
+                  className="hover:shadow-md transition-shadow"
+                >
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <CardTitle className="text-lg mb-2">
+                          {service.name}
+                        </CardTitle>
+                        <p className="text-sm text-gray-600 line-clamp-2">
+                          {service.description}
+                        </p>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600">Duration:</span>
+                        <span className="font-medium">
+                          {service.duration < 60
+                            ? `${service.duration} min`
+                            : `${Math.floor(service.duration / 60)}h ${
+                                service.duration % 60
+                              }min`}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600">Price:</span>
+                        <span className="font-medium text-green-600">
+                          ${service.price}
+                        </span>
+                      </div>
+                      {service.category && (
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-gray-600">Category:</span>
+                          <Badge variant="secondary" className="text-xs">
+                            {typeof service.category === "string"
+                              ? service.category
+                              : service.category.name}
+                          </Badge>
+                        </div>
+                      )}
+                    </div>
+                    <div className="mt-4 flex gap-2">
+                      <Button size="sm" className="flex-1" asChild>
+                        <Link href={`/services/${service._id}`}>
+                          View Details
+                        </Link>
+                      </Button>
+                      <Button size="sm" variant="outline">
+                        Book Now
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <div className="text-gray-500 mb-4">
+                No services available at the moment
+              </div>
               <Button variant="outline" asChild>
                 <Link href="/services">Browse All Services</Link>
               </Button>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Business Info */}
