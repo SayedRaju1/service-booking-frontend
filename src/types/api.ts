@@ -95,9 +95,30 @@ export interface Service {
   description: string;
   duration: number; // in minutes
   price: number;
-  category: string;
-  business: string; // Business ID
-  staff: string[]; // Staff IDs
+  currency?: string;
+  category:
+    | string
+    | {
+        _id: string;
+        name: string;
+        description?: string;
+        icon?: string;
+        color?: string;
+      };
+  business: string | { _id: string; name: string; address?: unknown };
+  staff?: string[]; // Staff IDs
+  isActive?: boolean;
+  isFeatured?: boolean;
+  images?: string[];
+  requirements?: string[];
+  cancellationPolicy?: string;
+  maxBookingsPerDay?: number;
+  bufferTime?: number;
+  rating?: number;
+  reviewCount?: number;
+  durationFormatted?: string;
+  priceFormatted?: string;
+  totalTime?: number;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

@@ -223,12 +223,23 @@ export default function BusinessDetailPage() {
 
         {/* Services Section */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Services</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">
+            Services Offered
+          </h2>
           <div className="text-center py-8">
             <div className="text-gray-500 mb-4">
               Services will be available soon
             </div>
-            <Button variant="outline">View Services</Button>
+            <div className="flex gap-2 justify-center">
+              <Button variant="outline" asChild>
+                <Link href={`/services?businessId=${business._id}`}>
+                  View All Services
+                </Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link href="/services">Browse All Services</Link>
+              </Button>
+            </div>
           </div>
         </div>
 
