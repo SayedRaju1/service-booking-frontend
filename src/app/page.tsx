@@ -28,6 +28,11 @@ export default function Home() {
               in one place.
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6">
+              <Link href="/categories">
+                <Button size="lg" className="text-lg px-8 py-3">
+                  Browse Categories
+                </Button>
+              </Link>
               <Link href="/businesses">
                 <Button size="lg" className="text-lg px-8 py-3">
                   Find Services

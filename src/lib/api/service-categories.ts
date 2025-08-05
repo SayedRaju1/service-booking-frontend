@@ -68,4 +68,73 @@ export const serviceCategoriesApi = {
     );
     return response.data;
   },
+
+  // Get all services under a category (including subcategories)
+  getCategoryServices: async (
+    categoryId: string,
+    params?: {
+      page?: number;
+      limit?: number;
+      business?: string;
+      featured?: boolean;
+      minPrice?: number;
+      maxPrice?: number;
+      sortBy?: string;
+      sortOrder?: "asc" | "desc";
+    }
+  ): Promise<
+    ApiResponse<{
+      services: Service[];
+      category: ServiceCategory;
+      pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        pages: number;
+      };
+      filters: {
+        categoryIds: string[];
+        business: string | null;
+        featured: boolean;
+        minPrice: number | null;
+        maxPrice: number | null;
+      };
+    }>
+  > => {
+    const queryParams = new URLSearchParams();
+
+    if (params?.page) queryParams.append("page", params.page.toString());
+    if (params?.limit) queryParams.append("limit", params.limit.toString());
+    if (params?.business) queryParams.append("business", params.business);
+    if (params?.featured !== undefined)
+      queryParams.append("featured", params.featured.toString());
+    if (params?.minPrice)
+      queryParams.append("minPrice", params.minPrice.toString());
+    if (params?.maxPrice)
+      queryParams.append("maxPrice", params.maxPrice.toString());
+    if (params?.sortBy) queryParams.append("sortBy", params.sortBy);
+    if (params?.sortOrder) queryParams.append("sortOrder", params.sortOrder);
+
+    const response = await apiClient.get<
+      ApiResponse<{
+        services: Service[];
+        category: ServiceCategory;
+        pagination: {
+          page: number;
+          limit: number;
+          total: number;
+          pages: number;
+        };
+        filters: {
+          categoryIds: string[];
+          business: string | null;
+          featured: boolean;
+          minPrice: number | null;
+          maxPrice: number | null;
+        };
+      }>
+    >(`/service-categories/${categoryId}/services?${queryParams.toString()}`);
+
+    return response.data;
+  },
 };
