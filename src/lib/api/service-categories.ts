@@ -4,6 +4,7 @@ import {
   ServiceCategory,
   CreateServiceCategoryRequest,
   UpdateServiceCategoryRequest,
+  Service,
 } from "@/types/api";
 
 // Service Categories API endpoints

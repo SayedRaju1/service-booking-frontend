@@ -203,6 +203,8 @@ export interface ServiceCategory {
   parent?: string; // Parent category ID
   business?: string; // Business ID if category is business-specific
   isActive: boolean;
+  subcategories?: ServiceCategory[]; // Subcategories (populated by API)
+  color?: string; // Category color for UI
   createdAt: string;
   updatedAt: string;
 }

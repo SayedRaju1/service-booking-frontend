@@ -16,7 +16,7 @@ export default function CategoriesPage() {
 
   const categories = categoriesData?.data?.categories || [];
   const topLevelCategories = categories.filter(
-    (category) => !category.parentCategory
+    (category: any) => !category.parentCategory
   );
 
   if (isLoading) {
@@ -51,7 +51,7 @@ export default function CategoriesPage() {
 
         {/* Categories Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {topLevelCategories.map((category) => (
+          {topLevelCategories.map((category: any) => (
             <Card
               key={category._id}
               className="hover:shadow-lg transition-shadow cursor-pointer group"
@@ -87,7 +87,7 @@ export default function CategoriesPage() {
                         <div className="flex flex-wrap gap-1">
                           {category.subcategories
                             .slice(0, 3)
-                            .map((subcategory) => (
+                            .map((subcategory: any) => (
                               <span
                                 key={subcategory._id}
                                 className="inline-block px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded"
