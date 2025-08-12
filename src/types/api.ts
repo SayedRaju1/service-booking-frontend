@@ -246,6 +246,95 @@ export interface UpdateServiceRequest {
   isActive?: boolean;
 }
 
+// Staff Availability types
+export interface StaffAvailability {
+  _id: string;
+  staff: string;
+  dayOfWeek: string; // "monday", "tuesday", etc.
+  startTime: string; // "09:00"
+  endTime: string; // "17:00"
+  isAvailable: boolean;
+  breakStart?: string; // "12:00"
+  breakEnd?: string; // "13:00"
+  maxBookingsPerDay?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Base Staff interface
+export interface Staff {
+  _id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  position?: string;
+  bio?: string;
+  profileImage?: string;
+  isActive?: boolean;
+  experience?: number;
+  rating?: number;
+  totalBookings?: number;
+  specialties?: string[];
+  hourlyRate?: number;
+  commissionRate?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Time Slot types
+export interface TimeSlot {
+  start: string; // ISO date string
+  end: string; // ISO date string
+  available: boolean;
+  duration: number; // in minutes
+  startTime: string; // "10:00" (formatted time)
+  endTime: string; // "11:15" (formatted time)
+}
+
+// Enhanced Staff interface with availability
+export interface StaffWithAvailability extends Staff {
+  availability?: StaffAvailability; // Changed from StaffAvailability[] to StaffAvailability
+  existingBookings?: number;
+  maxBookingsPerDay?: number;
+  specialties?: string[];
+  rating?: number;
+  totalBookings?: number;
+  profileImage?: string;
+  position?: string;
+}
+
+// Available Staff Response
+export interface AvailableStaffResponse {
+  service: Service;
+  availableStaff: StaffWithAvailability[];
+  selectedDate: string;
+  dayOfWeek: string;
+}
+
+// Staff Time Slots Response
+export interface StaffTimeSlotsResponse {
+  staff: Staff;
+  service: Service;
+  availability: {
+    startTime: string;
+    endTime: string;
+    breakStart?: string;
+    breakEnd?: string;
+  };
+  timeSlots: TimeSlot[];
+  selectedDate: string;
+  dayOfWeek: string;
+}
+
+// Updated Create Booking Request (now requires staffId)
+export interface CreateBookingRequest {
+  serviceId: string;
+  businessId: string;
+  staffId: string; // Now required
+  appointmentDate: string; // Full ISO date string
+  notes?: string;
+}
+
 // API Error types
 export interface ApiError {
   message: string;

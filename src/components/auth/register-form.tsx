@@ -54,12 +54,8 @@ export function RegisterForm() {
     onSuccess: (response) => {
       if (response.success && response.data) {
         login(response.data.user, response.data.token);
-        // Redirect based on user role
-        if (response.data.user.role === "service_provider") {
-          router.push("/dashboard/business");
-        } else {
-          router.push("/dashboard/customer");
-        }
+        // Redirect to home page since dashboard isn't built yet
+        router.push("/");
       }
     },
     onError: (error: unknown) => {

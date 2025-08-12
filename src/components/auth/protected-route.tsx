@@ -26,13 +26,9 @@ export function ProtectedRoute({
       }
 
       if (requiredRole && user && user.role !== requiredRole) {
-        // Redirect to appropriate dashboard based on user role
-        if (user.role === "service_provider") {
-          router.push("/dashboard/business");
-        } else {
-          router.push("/dashboard/customer");
-        }
-        return;
+        // Redirect to home page since dashboard isn't built yet
+        router.push("/");
+        return null;
       }
     }
   }, [isAuthenticated, user, isLoading, requiredRole, router, redirectTo]);

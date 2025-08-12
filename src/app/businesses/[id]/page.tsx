@@ -22,10 +22,20 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { businessApi } from "@/lib/api/business";
 import { servicesApi } from "@/lib/api/services";
+import { useState } from "react";
+import { BookingFlow } from "@/components/booking/booking-flow";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function BusinessDetailPage() {
   const params = useParams();
   const businessId = params.id as string;
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const [selectedService, setSelectedService] = useState<string | null>(null);
 
   const {
     data: businessData,
@@ -94,6 +104,16 @@ export default function BusinessDetailPage() {
       other: "bg-gray-100 text-gray-800",
     };
     return colors[category] || colors.other;
+  };
+
+  const handleBookNow = (serviceId: string) => {
+    setSelectedService(serviceId);
+    setIsBookingOpen(true);
+  };
+
+  const handleBookingClose = () => {
+    setIsBookingOpen(false);
+    setSelectedService(null);
   };
 
   return (
@@ -303,7 +323,11 @@ export default function BusinessDetailPage() {
                           View Details
                         </Link>
                       </Button>
-                      <Button size="sm" variant="outline">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleBookNow(service._id)}
+                      >
                         Book Now
                       </Button>
                     </div>
@@ -377,6 +401,32 @@ export default function BusinessDetailPage() {
           </Card>
         </div>
       </div>
+
+      {/* Booking Modal */}
+      <Dialog open={isBookingOpen} onOpenChange={setIsBookingOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="flex items-center justify-between">
+            <DialogTitle className="text-2xl font-bold text-gray-900">
+              Book Appointment
+            </DialogTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleBookingClose}
+              className="h-8 w-8 p-0"
+            >
+              ×
+            </Button>
+          </DialogHeader>
+          {selectedService && (
+            <BookingFlow
+              initialServiceId={selectedService}
+              businessId={businessId}
+              onClose={handleBookingClose}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

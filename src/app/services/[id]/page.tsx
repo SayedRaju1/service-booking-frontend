@@ -184,10 +184,18 @@ export default function ServiceDetailPage() {
 
             {/* Action Buttons */}
             <div className="flex flex-col gap-3">
-              <Button size="lg" className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                Book Appointment
-              </Button>
+              <Link
+                href={`/booking?serviceId=${service._id}&businessId=${
+                  typeof service.business === "string"
+                    ? service.business
+                    : service.business._id || service.business.id
+                }`}
+              >
+                <Button size="lg" className="flex items-center gap-2 w-full">
+                  <Calendar className="h-5 w-5" />
+                  Book Appointment
+                </Button>
+              </Link>
               <Button
                 variant="outline"
                 size="lg"

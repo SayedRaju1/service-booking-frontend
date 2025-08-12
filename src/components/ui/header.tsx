@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuthStore } from "@/stores/auth";
+import { LoginButton } from "@/components/auth/login-button";
 
 export function Header() {
   const { user, isAuthenticated, logout } = useAuthStore();
@@ -25,10 +26,8 @@ export function Header() {
   };
 
   const getDashboardLink = () => {
-    if (!user) return "/login";
-    return user.role === "service_provider"
-      ? "/dashboard/business"
-      : "/dashboard/customer";
+    // Redirect to home page since dashboard isn't built yet
+    return "/";
   };
 
   return (
@@ -74,7 +73,7 @@ export function Header() {
                   href={getDashboardLink()}
                   className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
                 >
-                  Dashboard
+                  Home
                 </Link>
               )}
             </nav>
@@ -106,9 +105,10 @@ export function Header() {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={() => router.push(getDashboardLink())}
+                    className="cursor-pointer"
                   >
-                    <Calendar className="mr-2 h-4 w-4" />
-                    <span>Dashboard</span>
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Home</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => router.push("/profile")}>
                     <Settings className="mr-2 h-4 w-4" />
@@ -123,9 +123,7 @@ export function Header() {
               </DropdownMenu>
             ) : (
               <div className="flex space-x-2">
-                <Button variant="ghost" onClick={() => router.push("/login")}>
-                  Sign in
-                </Button>
+                <LoginButton />
                 <Button onClick={() => router.push("/register")}>
                   Sign up
                 </Button>
