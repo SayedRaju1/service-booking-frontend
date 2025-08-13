@@ -37,7 +37,7 @@ interface ProfileFormData {
 }
 
 export default function CustomerProfilePage() {
-  const { user, updateUser } = useAuthStore();
+  const { user, setUser } = useAuthStore();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<ProfileFormData>({
     name: user?.name || "",
@@ -70,7 +70,7 @@ export default function CustomerProfilePage() {
     mutationFn: (data: Partial<ProfileFormData>) => authApi.updateProfile(data),
     onSuccess: (response) => {
       if (response.data?.user) {
-        updateUser(response.data.user);
+        setUser(response.data.user);
         queryClient.invalidateQueries({ queryKey: ["user-profile"] });
         setIsEditing(false);
       }

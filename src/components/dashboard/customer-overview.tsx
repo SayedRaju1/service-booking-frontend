@@ -7,9 +7,11 @@ import { Calendar, Clock, MapPin, User, Star, Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { bookingsApi } from "@/lib/api/bookings";
 import { formatDistanceToNow } from "date-fns";
+import { useRouter } from "next/navigation";
 
 export function CustomerOverview() {
   const { user } = useAuthStore();
+  const router = useRouter();
 
   // Fetch customer's bookings
   const {
@@ -74,6 +76,23 @@ export function CustomerOverview() {
       </div>
     );
   }
+
+  const handleQuickAction = (action: string) => {
+    switch (action) {
+      case "book":
+        router.push("/services");
+        break;
+      case "businesses":
+        router.push("/businesses");
+        break;
+      case "rate":
+        // TODO: Implement rating functionality later
+        // router.push("/dashboard/bookings");
+        break;
+      default:
+        break;
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -157,7 +176,10 @@ export function CustomerOverview() {
             <CardTitle className="text-lg">Quick Actions</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-colors cursor-pointer">
+            <div
+              className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-colors cursor-pointer"
+              onClick={() => handleQuickAction("book")}
+            >
               <Calendar className="h-5 w-5 text-blue-600" />
               <div>
                 <p className="font-medium text-gray-900">Book New Service</p>
@@ -166,7 +188,10 @@ export function CustomerOverview() {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-green-300 hover:bg-green-50 transition-colors cursor-pointer">
+            <div
+              className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-green-300 hover:bg-green-50 transition-colors cursor-pointer"
+              onClick={() => handleQuickAction("businesses")}
+            >
               <MapPin className="h-5 w-5 text-green-600" />
               <div>
                 <p className="font-medium text-gray-900">Find Businesses</p>
@@ -175,11 +200,14 @@ export function CustomerOverview() {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-purple-300 hover:bg-purple-50 transition-colors cursor-pointer">
+            <div
+              className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-purple-300 hover:bg-purple-50 transition-colors cursor-pointer opacity-50"
+              // onClick={() => handleQuickAction("rate")}
+            >
               <Star className="h-5 w-5 text-purple-600" />
               <div>
                 <p className="font-medium text-gray-900">Rate Services</p>
-                <p className="text-sm text-gray-600">Share your experience</p>
+                <p className="text-sm text-gray-600">Coming Soon</p>
               </div>
             </div>
           </CardContent>
