@@ -3,22 +3,24 @@
 import { useAuthStore } from "@/stores/auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, MapPin, User, Star } from "lucide-react";
+import { Calendar, Clock, MapPin, User, Star, Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { bookingsApi } from "@/lib/api/bookings";
+import { formatDistanceToNow } from "date-fns";
 
-interface CustomerOverviewProps {
-  totalBookings?: number;
-  upcomingBookings?: number;
-  completedBookings?: number;
-  favoriteServices?: string[];
-}
-
-export function CustomerOverview({
-  totalBookings = 0,
-  upcomingBookings = 0,
-  completedBookings = 0,
-  favoriteServices = [],
-}: CustomerOverviewProps) {
+export function CustomerOverview() {
   const { user } = useAuthStore();
+
+  // Fetch customer's bookings
+  const {
+    data: bookingsData,
+    isLoading: isLoadingBookings,
+    error: bookingsError,
+  } = useQuery({
+    queryKey: ["customer-bookings"],
+    queryFn: () => bookingsApi.getMyBookings(),
+    enabled: !!user?._id,
+  });
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -26,6 +28,52 @@ export function CustomerOverview({
     if (hour < 18) return "Good afternoon";
     return "Good evening";
   };
+
+  // Calculate statistics from real data
+  const totalBookings = bookingsData?.data?.bookings?.length || 0;
+  const upcomingBookings =
+    bookingsData?.data?.bookings?.filter(
+      (booking) => new Date(booking.appointmentDate) > new Date()
+    ).length || 0;
+  const completedBookings =
+    bookingsData?.data?.bookings?.filter(
+      (booking) => booking.status === "completed"
+    ).length || 0;
+
+  // Get recent bookings for activity feed
+  const recentBookings = bookingsData?.data?.bookings?.slice(0, 3) || [];
+
+  if (isLoadingBookings) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            <span className="ml-2 text-gray-600">
+              Loading your dashboard...
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (bookingsError) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="text-center py-8">
+            <p className="text-red-600 mb-2">Error loading dashboard data</p>
+            <p className="text-gray-600 text-sm">
+              {bookingsError instanceof Error
+                ? bookingsError.message
+                : "Unknown error occurred"}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -37,8 +85,8 @@ export function CustomerOverview({
               {getGreeting()}, {user?.name || "User"}! 👋
             </h1>
             <p className="text-gray-600 mt-1">
-              Welcome to your customer dashboard. Here's what's happening with
-              your bookings.
+              Welcome to your customer dashboard. Here&apos;s what&apos;s
+              happening with your bookings.
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -148,24 +196,29 @@ export function CustomerOverview({
                 <span className="text-gray-600">Welcome to your dashboard</span>
                 <span className="text-gray-400 ml-auto">Just now</span>
               </div>
-              {totalBookings > 0 && (
+
+              {recentBookings.length > 0 ? (
+                recentBookings.map((booking) => (
+                  <div
+                    key={booking._id}
+                    className="flex items-center gap-3 text-sm"
+                  >
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span className="text-gray-600">
+                      {booking.service.name} at {booking.business.name}
+                    </span>
+                    <span className="text-gray-400 ml-auto">
+                      {formatDistanceToNow(new Date(booking.createdAt), {
+                        addSuffix: true,
+                      })}
+                    </span>
+                  </div>
+                ))
+              ) : (
                 <div className="flex items-center gap-3 text-sm">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-gray-600">
-                    {totalBookings} booking{totalBookings !== 1 ? "s" : ""}{" "}
-                    found
-                  </span>
-                  <span className="text-gray-400 ml-auto">Just now</span>
-                </div>
-              )}
-              {upcomingBookings > 0 && (
-                <div className="flex items-center gap-3 text-sm">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                  <span className="text-gray-600">
-                    {upcomingBookings} upcoming appointment
-                    {upcomingBookings !== 1 ? "s" : ""}
-                  </span>
-                  <span className="text-gray-400 ml-auto">Just now</span>
+                  <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                  <span className="text-gray-500">No recent bookings</span>
+                  <span className="text-gray-400 ml-auto">-</span>
                 </div>
               )}
             </div>

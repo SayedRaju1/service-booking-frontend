@@ -44,6 +44,41 @@ export const authApi = {
     return response.data;
   },
 
+  // Update user settings (uses the profile endpoint)
+  updateSettings: async (data: {
+    notifications?: {
+      emailNotifications?: boolean;
+      smsNotifications?: boolean;
+      pushNotifications?: boolean;
+      bookingReminders?: boolean;
+      promotionalEmails?: boolean;
+      reminderTime?: string;
+    };
+    privacy?: {
+      profileVisibility?: string;
+      showEmail?: boolean;
+      showPhone?: boolean;
+      allowContactFromBusinesses?: boolean;
+    };
+    preferences?: {
+      language?: string;
+      timezone?: string;
+      currency?: string;
+      theme?: string;
+    };
+  }): Promise<ApiResponse<User>> => {
+    // Format settings data to be included in profile update
+    const profileData = {
+      settings: data,
+    };
+
+    const response = await apiClient.put<ApiResponse<User>>(
+      "/auth/profile",
+      profileData
+    );
+    return response.data;
+  },
+
   // Change password
   changePassword: async (data: {
     currentPassword: string;

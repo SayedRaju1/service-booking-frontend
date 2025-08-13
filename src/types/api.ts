@@ -176,6 +176,50 @@ export interface Booking {
   updatedAt: string;
 }
 
+// Populated booking interface for getMyBookings endpoint
+export interface PopulatedBooking {
+  _id: string;
+  customer: string; // User ID
+  business: {
+    _id: string;
+    name: string;
+    address: {
+      street: string;
+      city: string;
+      state: string;
+      zipCode: string;
+      country: string;
+    };
+    contact: {
+      phone: string;
+      email: string;
+      website?: string;
+    };
+  };
+  service: {
+    _id: string;
+    name: string;
+    description: string;
+    duration: number;
+    price: number;
+    currency: string;
+  };
+  staff?: {
+    _id: string;
+    name: string;
+    position: string;
+  };
+  appointmentDate: string;
+  duration: number;
+  totalPrice: number;
+  currency: string;
+  status: "pending" | "confirmed" | "cancelled" | "completed" | "no_show";
+  paymentStatus: "pending" | "paid" | "refunded";
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Booking creation response (matches actual backend structure)
 export interface BookingCreationResponse {
   success: boolean;

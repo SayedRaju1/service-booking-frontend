@@ -2,6 +2,8 @@ import apiClient from "./client";
 import {
   ApiResponse,
   Booking,
+  PopulatedBooking,
+  PaginationMeta,
   CreateBookingRequest as NewCreateBookingRequest,
   BookingCreationResponse,
 } from "@/types/api";
@@ -71,7 +73,24 @@ export const bookingsApi = {
     return response.data;
   },
 
-  // Get user's bookings
+  // Get user's bookings (for customers)
+  getMyBookings: async (filters?: {
+    status?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<
+    ApiResponse<{ bookings: PopulatedBooking[]; pagination: PaginationMeta }>
+  > => {
+    const params = new URLSearchParams();
+    if (filters?.status) params.append("status", filters.status);
+    if (filters?.page) params.append("page", filters.page.toString());
+    if (filters?.limit) params.append("limit", filters.limit.toString());
+
+    const response = await apiClient.get(`/bookings/my?${params.toString()}`);
+    return response.data;
+  },
+
+  // Get user's bookings (legacy method - keeping for backward compatibility)
   getUserBookings: async (
     filters?: BookingFilters
   ): Promise<ApiResponse<Booking[]>> => {
