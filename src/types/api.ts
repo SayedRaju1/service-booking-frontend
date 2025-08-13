@@ -176,6 +176,78 @@ export interface Booking {
   updatedAt: string;
 }
 
+// Booking creation response (matches actual backend structure)
+export interface BookingCreationResponse {
+  success: boolean;
+  message: string;
+  data: {
+    booking: {
+      _id: string;
+      customer: {
+        _id: string;
+        name: string;
+        email: string;
+        phone: string;
+        fullName: string;
+        id: string;
+      };
+      service: {
+        _id: string;
+        name: string;
+        description: string;
+        duration: number;
+        price: number;
+        currency: string;
+        durationFormatted: string;
+        priceFormatted: string;
+        totalTime: number | null;
+        id: string;
+      };
+      business: {
+        address: {
+          street: string;
+          city: string;
+          state: string;
+          zipCode: string;
+          country: string;
+        };
+        contact: {
+          phone: string;
+          email: string;
+          website: string;
+        };
+        _id: string;
+        name: string;
+        fullAddress: string;
+        averageRating: number;
+        id: string;
+      };
+      staff: {
+        _id: string;
+        name: string;
+        position: string;
+      };
+      appointmentDate: string;
+      duration: number;
+      totalPrice: number;
+      currency: string;
+      status: string;
+      paymentStatus: string;
+      notes: string;
+      reminderSent: boolean;
+      createdAt: string;
+      updatedAt: string;
+      appointmentEndDate: string;
+      appointmentDateFormatted: string;
+      totalPriceFormatted: string;
+      timeUntilAppointment: number;
+      isUpcoming: boolean;
+      isPast: boolean;
+      id: string;
+    };
+  };
+}
+
 // Authentication types
 export interface LoginRequest {
   email: string;

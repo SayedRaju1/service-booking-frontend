@@ -338,7 +338,7 @@ function BookingCard({
                   {formatPrice(booking.totalAmount)}
                 </span>
                 <div className="flex gap-2">
-                  <Link href={`/booking/confirmation/${booking._id}`}>
+                  <Link href={`/booking/success?bookingId=${booking._id}`}>
                     <Button variant="outline" size="sm">
                       <Eye className="h-4 w-4 mr-1" />
                       View Details

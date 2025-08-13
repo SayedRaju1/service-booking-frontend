@@ -4,7 +4,6 @@ import { CheckCircle, Calendar, Clock, MapPin } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import Link from "next/link";
 
 interface BookingSuccessProps {
   booking: {
@@ -139,12 +138,19 @@ export function BookingSuccess({
                 Close
               </Button>
             )}
-            <Link
-              href={`/booking/confirmation/${booking._id}`}
+            <Button
               className="flex-1"
+              variant="outline"
+              onClick={() => {
+                if (onClose) {
+                  onClose();
+                } else {
+                  window.location.href = "/";
+                }
+              }}
             >
-              <Button className="w-full">View Details</Button>
-            </Link>
+              Done
+            </Button>
           </div>
         </CardContent>
       </Card>

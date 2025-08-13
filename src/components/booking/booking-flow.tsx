@@ -115,9 +115,16 @@ export function BookingFlow({
   // Handle booking confirmation
   const handleConfirmBooking = async (notes?: string) => {
     try {
-      await createBooking(notes);
-      // Redirect to success page or dashboard
-      router.push(`/booking/success?bookingId=${Date.now()}`);
+      const result = await createBooking(notes);
+      // Use the real booking ID returned from the backend
+      // The API returns data.booking._id, not data._id
+      if (result?.data?.booking?._id) {
+        router.push(`/booking/success?bookingId=${result.data.booking._id}`);
+      } else {
+        // Fallback if no booking ID (shouldn't happen in normal flow)
+        console.error("No booking ID returned from backend", result);
+        router.push("/booking/success?error=no-booking-id");
+      }
     } catch (error) {
       console.error("Booking failed:", error);
       // Error is handled by the hook

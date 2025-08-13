@@ -3,6 +3,7 @@ import {
   ApiResponse,
   Booking,
   CreateBookingRequest as NewCreateBookingRequest,
+  BookingCreationResponse,
 } from "@/types/api";
 
 // Legacy interface for backward compatibility
@@ -53,13 +54,19 @@ export const bookingsApi = {
   // Create a new staff-based booking (new method)
   createStaffBasedBooking: async (
     data: CreateStaffBasedBookingRequest
-  ): Promise<ApiResponse<Booking>> => {
+  ): Promise<
+    ApiResponse<{ booking: BookingCreationResponse["data"]["booking"] }>
+  > => {
     const response = await apiClient.post("/bookings", data);
     return response.data;
   },
 
   // Get booking by ID
-  getBookingById: async (id: string): Promise<ApiResponse<Booking>> => {
+  getBookingById: async (
+    id: string
+  ): Promise<
+    ApiResponse<{ booking: BookingCreationResponse["data"]["booking"] }>
+  > => {
     const response = await apiClient.get(`/bookings/${id}`);
     return response.data;
   },
