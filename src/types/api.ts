@@ -20,6 +20,24 @@ export interface BusinessServicesResponse {
   businessId: string;
 }
 
+// Service Provider Dashboard Response Types
+export interface MyBusinessResponse {
+  business: Business;
+}
+
+export interface MyBusinessServicesResponse {
+  services: Service[];
+}
+
+export interface BusinessStaffResponse {
+  staff: Staff[];
+}
+
+export interface BusinessBookingsResponse {
+  bookings: PopulatedBooking[];
+  pagination: PaginationMeta;
+}
+
 // Pagination types
 export interface PaginationMeta {
   page: number;

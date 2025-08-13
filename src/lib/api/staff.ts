@@ -2,129 +2,116 @@ import apiClient from "./client";
 import {
   ApiResponse,
   Staff,
-  StaffWithAvailability,
-  AvailableStaffResponse,
-  StaffTimeSlotsResponse,
-  StaffAvailability,
+  PaginationMeta,
+  BusinessStaffResponse,
 } from "@/types/api";
 
-export interface Staff {
-  _id: string;
-  name: string;
-  email: string;
-  phone?: string;
-  role: "staff" | "manager" | "admin";
-  specialties?: string[]; // Service IDs they can perform
-  business: string; // Business ID
-  isActive: boolean;
-  avatar?: string;
-  bio?: string;
-  experience?: number; // Years of experience
-  rating?: number;
-  totalBookings?: number;
-  availability?: {
-    [key: string]: {
-      // Day of week (monday, tuesday, etc.)
-      startTime: string;
-      endTime: string;
-      isAvailable: boolean;
-    };
-  };
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CreateStaffRequest {
-  name: string;
-  email: string;
-  phone?: string;
-  role?: "staff" | "manager" | "admin";
-  specialties?: string[];
-  business: string;
-  bio?: string;
-  experience?: number;
-  availability?: {
-    [key: string]: {
-      startTime: string;
-      endTime: string;
-      isAvailable: boolean;
-    };
-  };
-}
-
-export interface UpdateStaffRequest {
-  name?: string;
-  email?: string;
-  phone?: string;
-  role?: "staff" | "manager" | "admin";
-  specialties?: string[];
-  bio?: string;
-  experience?: number;
-  isActive?: boolean;
-  availability?: {
-    [key: string]: {
-      startTime: string;
-      endTime: string;
-      isAvailable: boolean;
-    };
-  };
-}
-
-export interface StaffFilters {
-  business?: string;
-  role?: string;
-  isActive?: boolean;
-  specialty?: string;
-  page?: number;
-  limit?: number;
-}
-
 export const staffApi = {
-  // Get all staff for a business
-  getBusinessStaff: async (
-    businessId: string,
-    filters?: StaffFilters
-  ): Promise<ApiResponse<Staff[]>> => {
+  // Get all staff with filtering and pagination
+  getStaff: async (filters?: {
+    page?: number;
+    limit?: number;
+    business?: string;
+    position?: string;
+    isActive?: boolean;
+    search?: string;
+    sortBy?: string;
+    sortOrder?: "asc" | "desc";
+  }): Promise<ApiResponse<{ staff: Staff[]; pagination: PaginationMeta }>> => {
     const params = new URLSearchParams();
-    if (filters?.role) params.append("role", filters.role);
-    if (filters?.isActive !== undefined)
-      params.append("isActive", filters.isActive.toString());
-    if (filters?.specialty) params.append("specialty", filters.specialty);
     if (filters?.page) params.append("page", filters.page.toString());
     if (filters?.limit) params.append("limit", filters.limit.toString());
+    if (filters?.business) params.append("business", filters.business);
+    if (filters?.position) params.append("position", filters.position);
+    if (filters?.isActive !== undefined)
+      params.append("isActive", filters.isActive.toString());
+    if (filters?.search) params.append("search", filters.search);
+    if (filters?.sortBy) params.append("sortBy", filters.sortBy);
+    if (filters?.sortOrder) params.append("sortOrder", filters.sortOrder);
 
-    const response = await apiClient.get(
-      `/businesses/${businessId}/staff?${params.toString()}`
-    );
+    const response = await apiClient.get(`/staff?${params.toString()}`);
     return response.data;
   },
 
   // Get staff by ID
-  getStaffById: async (staffId: string): Promise<ApiResponse<Staff>> => {
-    const response = await apiClient.get(`/staff/${staffId}`);
+  getStaffById: async (id: string): Promise<ApiResponse<Staff>> => {
+    const response = await apiClient.get(`/staff/${id}`);
+    return response.data;
+  },
+
+  // Get business staff (for service providers)
+  getBusinessStaff: async (
+    businessId: string
+  ): Promise<ApiResponse<BusinessStaffResponse>> => {
+    const response = await apiClient.get(`/staff/business/${businessId}`);
     return response.data;
   },
 
   // Create new staff member
-  createStaff: async (
-    data: CreateStaffRequest
-  ): Promise<ApiResponse<Staff>> => {
+  createStaff: async (data: Partial<Staff>): Promise<ApiResponse<Staff>> => {
     const response = await apiClient.post("/staff", data);
     return response.data;
   },
 
   // Update staff member
   updateStaff: async (
-    staffId: string,
-    data: UpdateStaffRequest
+    id: string,
+    data: Partial<Staff>
   ): Promise<ApiResponse<Staff>> => {
-    const response = await apiClient.put(`/staff/${staffId}`, data);
+    const response = await apiClient.put(`/staff/${id}`, data);
     return response.data;
   },
 
   // Delete staff member
-  deleteStaff: async (staffId: string): Promise<ApiResponse<void>> => {
-    const response = await apiClient.delete(`/staff/${staffId}`);
+  deleteStaff: async (
+    id: string
+  ): Promise<ApiResponse<{ message: string }>> => {
+    const response = await apiClient.delete(`/staff/${id}`);
+    return response.data;
+  },
+
+  // Get available staff for a service
+  getAvailableStaff: async (
+    businessId: string,
+    serviceId: string,
+    appointmentDate: string
+  ): Promise<ApiResponse<any>> => {
+    const params = new URLSearchParams({
+      businessId,
+      serviceId,
+      appointmentDate,
+    });
+    const response = await apiClient.get(
+      `/staff/available?${params.toString()}`
+    );
+    return response.data;
+  },
+
+  // Get staff performance
+  getStaffPerformance: async (
+    staffId: string,
+    startDate?: string,
+    endDate?: string
+  ): Promise<ApiResponse<any>> => {
+    const params = new URLSearchParams();
+    if (startDate) params.append("startDate", startDate);
+    if (endDate) params.append("endDate", endDate);
+
+    const response = await apiClient.get(
+      `/staff/${staffId}/performance?${params.toString()}`
+    );
+    return response.data;
+  },
+
+  // Update staff availability
+  updateStaffAvailability: async (
+    staffId: string,
+    data: any
+  ): Promise<ApiResponse<Staff>> => {
+    const response = await apiClient.put(
+      `/staff/${staffId}/availability`,
+      data
+    );
     return response.data;
   },
 
@@ -132,58 +119,50 @@ export const staffApi = {
   getStaffAvailability: async (
     staffId: string,
     date: string
-  ): Promise<ApiResponse<StaffAvailability>> => {
+  ): Promise<ApiResponse<any>> => {
     const response = await apiClient.get(
       `/staff/${staffId}/availability?date=${date}`
     );
     return response.data;
   },
 
-  // Get all availability for a staff member
+  // Get all staff availability
   getStaffAllAvailability: async (
     staffId: string
-  ): Promise<ApiResponse<StaffAvailability[]>> => {
+  ): Promise<ApiResponse<any>> => {
     const response = await apiClient.get(`/staff/${staffId}/all-availability`);
     return response.data;
   },
 
-  // Get available staff for a service on a specific date
-  getAvailableStaffForService: async (
-    serviceId: string,
-    date: string
-  ): Promise<ApiResponse<AvailableStaffResponse>> => {
-    const response = await apiClient.get(
-      `/services/${serviceId}/available-staff?date=${date}`
-    );
-    return response.data;
-  },
-
-  // Get time slots for a specific staff member on a specific date
+  // Get staff time slots
   getStaffTimeSlots: async (
     staffId: string,
     date: string,
     serviceId: string
-  ): Promise<ApiResponse<StaffTimeSlotsResponse>> => {
+  ): Promise<ApiResponse<any>> => {
+    const params = new URLSearchParams({
+      date,
+      serviceId,
+    });
     const response = await apiClient.get(
-      `/staff/${staffId}/time-slots?date=${date}&serviceId=${serviceId}`
+      `/staff/${staffId}/time-slots?${params.toString()}`
     );
     return response.data;
   },
 
-  // Check staff availability for a specific time period
+  // Check staff availability
   checkStaffAvailability: async (
-    staffId: string,
+    businessId: string,
     serviceId: string,
     startDate: string,
     endDate: string
-  ): Promise<ApiResponse<boolean>> => {
+  ): Promise<ApiResponse<any>> => {
     const params = new URLSearchParams({
-      staffId,
+      businessId,
       serviceId,
       startDate,
       endDate,
     });
-
     const response = await apiClient.get(
       `/staff/check-availability?${params.toString()}`
     );
@@ -191,47 +170,20 @@ export const staffApi = {
   },
 
   // Create staff availability
-  createStaffAvailability: async (data: {
-    staff: string;
-    dayOfWeek: string;
-    startTime: string;
-    endTime: string;
-    isAvailable: boolean;
-    breakStart?: string;
-    breakEnd?: string;
-    maxBookingsPerDay?: number;
-  }): Promise<ApiResponse<StaffAvailability>> => {
+  createStaffAvailability: async (data: any): Promise<ApiResponse<any>> => {
     const response = await apiClient.post("/staff-availability", data);
     return response.data;
   },
 
   // Update staff availability
-  updateStaffAvailability: async (
+  updateStaffAvailabilityById: async (
     availabilityId: string,
-    data: {
-      startTime?: string;
-      endTime?: string;
-      isAvailable?: boolean;
-      breakStart?: string;
-      breakEnd?: string;
-      maxBookingsPerDay?: number;
-    }
-  ): Promise<ApiResponse<StaffAvailability>> => {
+    data: any
+  ): Promise<ApiResponse<any>> => {
     const response = await apiClient.put(
       `/staff-availability/${availabilityId}`,
       data
     );
-    return response.data;
-  },
-
-  // Update staff availability (legacy method - keeping for backward compatibility)
-  updateStaffAvailabilityLegacy: async (
-    staffId: string,
-    availability: any
-  ): Promise<ApiResponse<Staff>> => {
-    const response = await apiClient.put(`/staff/${staffId}/availability`, {
-      availability,
-    });
     return response.data;
   },
 };

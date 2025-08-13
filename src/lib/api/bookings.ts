@@ -124,9 +124,10 @@ export const bookingsApi = {
 
   // Get business bookings (for business owners)
   getBusinessBookings: async (
-    businessId: string,
     filters?: BookingFilters
-  ): Promise<ApiResponse<Booking[]>> => {
+  ): Promise<
+    ApiResponse<{ bookings: PopulatedBooking[]; pagination: PaginationMeta }>
+  > => {
     const params = new URLSearchParams();
     if (filters?.status) params.append("status", filters.status);
     if (filters?.date) params.append("date", filters.date);
@@ -136,7 +137,7 @@ export const bookingsApi = {
     if (filters?.limit) params.append("limit", filters.limit.toString());
 
     const response = await apiClient.get(
-      `/businesses/${businessId}/bookings?${params.toString()}`
+      `/bookings/business?${params.toString()}`
     );
     return response.data;
   },
