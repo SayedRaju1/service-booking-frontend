@@ -10,10 +10,12 @@ import {
 // Service Categories API endpoints
 export const serviceCategoriesApi = {
   // Get all service categories with hierarchy
-  getCategories: async (): Promise<ApiResponse<string[]>> => {
-    const response = await apiClient.get<ApiResponse<string[]>>(
-      "/service-categories"
-    );
+  getCategories: async (): Promise<
+    ApiResponse<{ categories: ServiceCategory[] }>
+  > => {
+    const response = await apiClient.get<
+      ApiResponse<{ categories: ServiceCategory[] }>
+    >("/service-categories");
     return response.data;
   },
 
