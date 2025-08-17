@@ -6,3 +6,4 @@ export { AdminOverview } from "./admin-overview";
 export { BusinessManagement } from "./business-management";
 export { ServicesManagement } from "./services-management";
 export { StaffManagement } from "./staff-management";
+export { CustomerBookings } from "./customer-bookings";

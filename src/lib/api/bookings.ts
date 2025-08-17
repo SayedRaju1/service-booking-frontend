@@ -117,20 +117,36 @@ export const bookingsApi = {
   },
 
   // Cancel booking
-  cancelBooking: async (id: string): Promise<ApiResponse<Booking>> => {
-    const response = await apiClient.patch(`/bookings/${id}/cancel`);
+  cancelBooking: async (
+    id: string,
+    data?: { cancellationReason?: string }
+  ): Promise<ApiResponse<Booking>> => {
+    const response = await apiClient.put(`/bookings/${id}/cancel`, data);
+    return response.data;
+  },
+
+  // Update booking status
+  updateBookingStatus: async (
+    id: string,
+    data: { status: string; cancellationReason?: string }
+  ): Promise<ApiResponse<Booking>> => {
+    const response = await apiClient.put(`/bookings/${id}/status`, data);
     return response.data;
   },
 
   // Get business bookings (for business owners)
   getBusinessBookings: async (
-    filters?: BookingFilters
+    filters?: BookingFilters & {
+      startDate?: string;
+      endDate?: string;
+    }
   ): Promise<
     ApiResponse<{ bookings: PopulatedBooking[]; pagination: PaginationMeta }>
   > => {
     const params = new URLSearchParams();
     if (filters?.status) params.append("status", filters.status);
-    if (filters?.date) params.append("date", filters.date);
+    if (filters?.startDate) params.append("startDate", filters.startDate);
+    if (filters?.endDate) params.append("endDate", filters.endDate);
     if (filters?.service) params.append("service", filters.service);
     if (filters?.staff) params.append("staff", filters.staff);
     if (filters?.page) params.append("page", filters.page.toString());
