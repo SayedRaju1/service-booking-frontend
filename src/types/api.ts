@@ -407,10 +407,18 @@ export interface Staff {
   isActive?: boolean;
   experience?: number;
   rating?: number;
-  totalBookings?: number;
   specialties?: string[];
   hourlyRate?: number;
   commissionRate?: number;
+  business?: string; // Business ID
+  performance?: {
+    totalBookings: number;
+    totalRevenue: number;
+    averageRating: number;
+    totalReviews: number;
+    completedServices: number;
+    cancelledServices: number;
+  };
   createdAt: string;
   updatedAt: string;
 }
@@ -432,7 +440,6 @@ export interface StaffWithAvailability extends Staff {
   maxBookingsPerDay?: number;
   specialties?: string[];
   rating?: number;
-  totalBookings?: number;
   profileImage?: string;
   position?: string;
 }

@@ -142,7 +142,7 @@ export default function BusinessDashboardPage() {
                     Manage Schedule
                   </Button>
                 </Link>
-                <Link href="/dashboard/business/staff">
+                <Link href="/dashboard/staff">
                   <Button variant="outline" className="w-full justify-start">
                     <Users className="h-4 w-4 mr-2" />
                     Manage Staff
