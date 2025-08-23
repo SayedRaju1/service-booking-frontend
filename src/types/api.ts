@@ -333,12 +333,13 @@ export interface AuthResponse {
 export interface ServiceCategory {
   _id: string;
   name: string;
-  description?: string;
-  parent?: string; // Parent category ID
-  business?: string; // Business ID if category is business-specific
+  description: string; // Required in backend
+  icon?: string;
+  color?: string;
+  parentCategory?: string; // Backend uses parentCategory, not parent
   isActive: boolean;
+  sortOrder: number;
   subcategories?: ServiceCategory[]; // Subcategories (populated by API)
-  color?: string; // Category color for UI
   createdAt: string;
   updatedAt: string;
 }
@@ -346,16 +347,20 @@ export interface ServiceCategory {
 // Service Category Request types
 export interface CreateServiceCategoryRequest {
   name: string;
-  description?: string;
-  parent?: string;
-  business?: string;
+  description: string; // Required in backend
+  icon?: string;
+  color?: string;
+  parentCategory?: string; // Backend uses parentCategory, not parent
+  sortOrder?: number;
 }
 
 export interface UpdateServiceCategoryRequest {
   name?: string;
   description?: string;
-  parent?: string;
-  business?: string;
+  icon?: string;
+  color?: string;
+  parentCategory?: string; // Backend uses parentCategory, not parent
+  sortOrder?: number;
   isActive?: boolean;
 }
 

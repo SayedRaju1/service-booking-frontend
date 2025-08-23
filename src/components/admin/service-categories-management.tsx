@@ -31,26 +31,21 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { serviceCategoriesApi } from "@/lib/api/service-categories";
 
-interface ServiceCategory {
-  _id: string;
-  name: string;
-  description: string;
-  icon: string;
-  color: string;
-  parentCategory?: string;
-  sortOrder: number;
-  isActive: boolean;
-  subcategories?: ServiceCategory[];
-}
+import {
+  ServiceCategory,
+  CreateServiceCategoryRequest,
+  UpdateServiceCategoryRequest,
+} from "@/types/api";
 
 interface CreateCategoryData {
   name: string;
   description: string;
-  icon: string;
-  color: string;
+  icon?: string;
+  color?: string;
   parentCategory?: string;
-  sortOrder: number;
+  sortOrder?: number;
 }
 
 export function ServiceCategoriesManagement() {
@@ -66,74 +61,28 @@ export function ServiceCategoriesManagement() {
     description: "",
     icon: "",
     color: "#3B82F6",
-    parentCategory: "",
+    parentCategory: undefined,
     sortOrder: 0,
   });
 
-  // Mock data for now - will be replaced with real API calls
-  useEffect(() => {
-    const mockCategories: ServiceCategory[] = [
-      {
-        _id: "1",
-        name: "Beauty & Wellness",
-        description: "Beauty treatments and wellness services",
-        icon: "spa",
-        color: "#EC4899",
-        sortOrder: 1,
-        isActive: true,
-        subcategories: [
-          {
-            _id: "1-1",
-            name: "Hair Styling",
-            description: "Hair cutting, styling, and treatments",
-            icon: "scissors",
-            color: "#F59E0B",
-            sortOrder: 1,
-            isActive: true,
-          },
-          {
-            _id: "1-2",
-            name: "Facial Treatments",
-            description: "Skincare and facial services",
-            icon: "face",
-            color: "#10B981",
-            sortOrder: 2,
-            isActive: true,
-          },
-        ],
-      },
-      {
-        _id: "2",
-        name: "Health & Medical",
-        description: "Medical and healthcare services",
-        icon: "heart",
-        color: "#EF4444",
-        sortOrder: 2,
-        isActive: true,
-        subcategories: [
-          {
-            _id: "2-1",
-            name: "Dental Care",
-            description: "Dental services and treatments",
-            icon: "tooth",
-            color: "#8B5CF6",
-            sortOrder: 1,
-            isActive: true,
-          },
-        ],
-      },
-      {
-        _id: "3",
-        name: "Fitness & Sports",
-        description: "Fitness training and sports services",
-        icon: "dumbbell",
-        color: "#06B6D4",
-        sortOrder: 3,
-        isActive: true,
-      },
-    ];
+  // Fetch categories from API
+  const fetchCategories = async () => {
+    setIsLoading(true);
+    try {
+      const response = await serviceCategoriesApi.getCategories();
+      if (response.success && response.data) {
+        setCategories(response.data.categories);
+      }
+    } catch (error) {
+      toast.error("Failed to fetch categories");
+      console.error("Error fetching categories:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    setCategories(mockCategories);
+  useEffect(() => {
+    fetchCategories();
   }, []);
 
   const handleCreateCategory = async () => {
@@ -144,22 +93,32 @@ export function ServiceCategoriesManagement() {
 
     setIsLoading(true);
     try {
-      // TODO: Replace with real API call
-      // const response = await serviceCategoriesApi.createCategory(formData);
-
-      // Mock success
-      const newCategory: ServiceCategory = {
-        _id: Date.now().toString(),
-        ...formData,
-        isActive: true,
+      const createData: CreateServiceCategoryRequest = {
+        name: formData.name,
+        description: formData.description,
+        icon: formData.icon || undefined,
+        color: formData.color,
+        parentCategory:
+          formData.parentCategory === "none"
+            ? undefined
+            : formData.parentCategory,
+        sortOrder: formData.sortOrder,
       };
 
-      setCategories((prev) => [...prev, newCategory]);
-      setIsCreateDialogOpen(false);
-      resetForm();
-      toast.success("Category created successfully");
-    } catch {
+      const response = await serviceCategoriesApi.createCategory(createData);
+
+      if (response.success && response.data) {
+        setIsCreateDialogOpen(false);
+        resetForm();
+        toast.success("Category created successfully");
+        // Refetch categories to show updated data including subcategories
+        await fetchCategories();
+      } else {
+        toast.error(response.message || "Failed to create category");
+      }
+    } catch (error) {
       toast.error("Failed to create category");
+      console.error("Error creating category:", error);
     } finally {
       setIsLoading(false);
     }
@@ -173,21 +132,35 @@ export function ServiceCategoriesManagement() {
 
     setIsLoading(true);
     try {
-      // TODO: Replace with real API call
-      // const response = await serviceCategoriesApi.updateCategory(selectedCategory._id, formData);
+      const updateData: UpdateServiceCategoryRequest = {
+        name: formData.name,
+        description: formData.description,
+        icon: formData.icon || undefined,
+        color: formData.color,
+        parentCategory:
+          formData.parentCategory === "none"
+            ? undefined
+            : formData.parentCategory,
+        sortOrder: formData.sortOrder,
+      };
 
-      // Mock success
-      setCategories((prev) =>
-        prev.map((cat) =>
-          cat._id === selectedCategory._id ? { ...cat, ...formData } : cat
-        )
+      const response = await serviceCategoriesApi.updateCategory(
+        selectedCategory._id,
+        updateData
       );
 
-      setIsEditDialogOpen(false);
-      resetForm();
-      toast.success("Category updated successfully");
-    } catch {
+      if (response.success && response.data) {
+        setIsEditDialogOpen(false);
+        resetForm();
+        toast.success("Category updated successfully");
+        // Refetch categories to show updated data including subcategories
+        await fetchCategories();
+      } else {
+        toast.error(response.message || "Failed to update category");
+      }
+    } catch (error) {
       toast.error("Failed to update category");
+      console.error("Error updating category:", error);
     } finally {
       setIsLoading(false);
     }
@@ -198,18 +171,22 @@ export function ServiceCategoriesManagement() {
 
     setIsLoading(true);
     try {
-      // TODO: Replace with real API call
-      // await serviceCategoriesApi.deleteCategory(selectedCategory._id);
-
-      // Mock success
-      setCategories((prev) =>
-        prev.filter((cat) => cat._id !== selectedCategory._id)
+      const response = await serviceCategoriesApi.deleteCategory(
+        selectedCategory._id
       );
-      setIsDeleteDialogOpen(false);
-      setSelectedCategory(null);
-      toast.success("Category deleted successfully");
-    } catch {
+
+      if (response.success) {
+        setIsDeleteDialogOpen(false);
+        setSelectedCategory(null);
+        toast.success("Category deleted successfully");
+        // Refetch categories to show updated data including subcategories
+        await fetchCategories();
+      } else {
+        toast.error(response.message || "Failed to delete category");
+      }
+    } catch (error) {
       toast.error("Failed to delete category");
+      console.error("Error deleting category:", error);
     } finally {
       setIsLoading(false);
     }
@@ -221,7 +198,7 @@ export function ServiceCategoriesManagement() {
       description: "",
       icon: "",
       color: "#3B82F6",
-      parentCategory: "",
+      parentCategory: undefined,
       sortOrder: 0,
     });
   };
@@ -230,11 +207,11 @@ export function ServiceCategoriesManagement() {
     setSelectedCategory(category);
     setFormData({
       name: category.name,
-      description: category.description,
-      icon: category.icon,
-      color: category.color,
-      parentCategory: category.parentCategory || "",
-      sortOrder: category.sortOrder,
+      description: category.description || "",
+      icon: category.icon || "",
+      color: category.color || "#3B82F6",
+      parentCategory: category.parentCategory || "none",
+      sortOrder: category.sortOrder || 0,
     });
     setIsEditDialogOpen(true);
   };
@@ -394,7 +371,7 @@ export function ServiceCategoriesManagement() {
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="parentCategory" className="text-right">
-                  Parent
+                  Parent Category
                 </Label>
                 <Select
                   value={formData.parentCategory}
@@ -406,7 +383,7 @@ export function ServiceCategoriesManagement() {
                     <SelectValue placeholder="Select parent category (optional)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">No parent category</SelectItem>
+                    <SelectItem value="none">No parent category</SelectItem>
                     {categories.map((cat) => (
                       <SelectItem key={cat._id} value={cat._id}>
                         {cat.name}
@@ -414,24 +391,6 @@ export function ServiceCategoriesManagement() {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="sortOrder" className="text-right">
-                  Sort Order
-                </Label>
-                <Input
-                  id="sortOrder"
-                  type="number"
-                  value={formData.sortOrder}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      sortOrder: parseInt(e.target.value) || 0,
-                    }))
-                  }
-                  className="col-span-3"
-                  placeholder="0"
-                />
               </div>
             </div>
             <DialogFooter>
@@ -530,7 +489,7 @@ export function ServiceCategoriesManagement() {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-parentCategory" className="text-right">
-                Parent
+                Parent Category
               </Label>
               <Select
                 value={formData.parentCategory}
@@ -542,7 +501,7 @@ export function ServiceCategoriesManagement() {
                   <SelectValue placeholder="Select parent category (optional)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No parent category</SelectItem>
+                  <SelectItem value="none">No parent category</SelectItem>
                   {categories.map((cat) => (
                     <SelectItem key={cat._id} value={cat._id}>
                       {cat.name}
@@ -550,23 +509,6 @@ export function ServiceCategoriesManagement() {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-sortOrder" className="text-right">
-                Sort Order
-              </Label>
-              <Input
-                id="edit-sortOrder"
-                type="number"
-                value={formData.sortOrder}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    sortOrder: parseInt(e.target.value) || 0,
-                  }))
-                }
-                className="col-span-3"
-              />
             </div>
           </div>
           <DialogFooter>
