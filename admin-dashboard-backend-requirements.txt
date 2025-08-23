@@ -1,0 +1,329 @@
+# Backend API Requirements for Admin Dashboard Frontend
+
+## Overview
+The frontend Admin Dashboard is fully implemented but requires specific backend APIs to replace mock data with real functionality. The following APIs are needed to support admin users in managing the entire service booking system.
+
+## Required API Endpoints
+
+### 1. User Management APIs (Admin-Only)
+
+#### GET /api/admin/users
+- **Purpose**: Retrieve all users in the system (customers, service providers, admins)
+- **Authorization**: `authenticate, authorize("admin")`
+- **Query Parameters**: 
+  - `page` (number): Pagination page number
+  - `limit` (number): Items per page
+  - `role` (string): Filter by user role ("customer", "serviceProvider", "admin")
+  - `status` (string): Filter by status ("active", "inactive")
+  - `verified` (boolean): Filter by verification status
+  - `search` (string): Search by name, email, or phone
+- **Response**: 
+  ```json
+  {
+    "success": true,
+    "data": {
+      "users": [
+        {
+          "_id": "string",
+          "name": "string",
+          "email": "string",
+          "phone": "string",
+          "role": "string",
+          "isActive": "boolean",
+          "isVerified": "boolean",
+          "createdAt": "date",
+          "business": { "_id": "string", "name": "string" } // if serviceProvider
+        }
+      ],
+      "pagination": {
+        "page": "number",
+        "limit": "number",
+        "total": "number",
+        "pages": "number"
+      }
+    }
+  }
+  ```
+
+#### PUT /api/admin/users/:id
+- **Purpose**: Update user details (admin can modify any user)
+- **Authorization**: `authenticate, authorize("admin")`
+- **Request Body**:
+  ```json
+  {
+    "name": "string",
+    "email": "string", 
+    "phone": "string",
+    "role": "string",
+    "isActive": "boolean",
+    "isVerified": "boolean"
+  }
+  ```
+- **Response**: Updated user object
+
+#### DELETE /api/admin/users/:id
+- **Purpose**: Deactivate/delete user account
+- **Authorization**: `authenticate, authorize("admin")`
+- **Response**: Success message
+
+### 2. Business Management APIs (Admin-Only)
+
+#### GET /api/admin/businesses
+- **Purpose**: Retrieve all businesses in the system (not just public ones)
+- **Authorization**: `authenticate, authorize("admin")`
+- **Query Parameters**:
+  - `page` (number): Pagination page number
+  - `limit` (number): Items per page
+  - `category` (string): Filter by service category
+  - `status` (string): Filter by status ("active", "inactive", "pending")
+  - `verified` (boolean): Filter by verification status
+  - `search` (string): Search by business name or owner name
+- **Response**:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "businesses": [
+        {
+          "_id": "string",
+          "name": "string",
+          "description": "string",
+          "category": { "_id": "string", "name": "string" },
+          "owner": { "_id": "string", "name": "string", "email": "string" },
+          "isActive": "boolean",
+          "isVerified": "boolean",
+          "address": "string",
+          "phone": "string",
+          "createdAt": "date",
+          "stats": {
+            "totalServices": "number",
+            "totalStaff": "number",
+            "totalBookings": "number"
+          }
+        }
+      ],
+      "pagination": { "page": "number", "limit": "number", "total": "number", "pages": "number" }
+    }
+  }
+  ```
+
+#### PUT /api/admin/businesses/:id/verify
+- **Purpose**: Approve/reject business verification
+- **Authorization**: `authenticate, authorize("admin")`
+- **Request Body**:
+  ```json
+  {
+    "isVerified": "boolean",
+    "verificationNotes": "string" // optional
+  }
+  ```
+- **Response**: Updated business object
+
+#### PUT /api/admin/businesses/:id/status
+- **Purpose**: Activate/deactivate business
+- **Authorization**: `authenticate, authorize("admin")`
+- **Request Body**:
+  ```json
+  {
+    "isActive": "boolean",
+    "deactivationReason": "string" // optional
+  }
+  ```
+- **Response**: Updated business object
+
+### 3. System-Wide Bookings API (Admin-Only)
+
+#### GET /api/admin/bookings
+- **Purpose**: Retrieve all bookings across all businesses
+- **Authorization**: `authenticate, authorize("admin")`
+- **Query Parameters**:
+  - `page` (number): Pagination page number
+  - `limit` (number): Items per page
+  - `status` (string): Filter by booking status
+  - `business` (string): Filter by business ID
+  - `service` (string): Filter by service ID
+  - `customer` (string): Filter by customer ID
+  - `startDate` (date): Filter by start date
+  - `endDate` (date): Filter by end date
+  - `search` (string): Search by customer name or service name
+- **Response**:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "bookings": [
+        {
+          "_id": "string",
+          "customer": { "_id": "string", "name": "string", "email": "string" },
+          "business": { "_id": "string", "name": "string" },
+          "service": { "_id": "string", "name": "string" },
+          "staff": { "_id": "string", "name": "string" },
+          "status": "string",
+          "scheduledDate": "date",
+          "scheduledTime": "string",
+          "totalAmount": "number",
+          "createdAt": "date"
+        }
+      ],
+      "pagination": { "page": "number", "limit": "number", "total": "number", "pages": "number" }
+    }
+  }
+  ```
+
+### 4. System Analytics APIs (Admin-Only)
+
+#### GET /api/admin/analytics/overview
+- **Purpose**: Get system-wide statistics and metrics
+- **Authorization**: `authenticate, authorize("admin")`
+- **Response**:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "users": {
+        "total": "number",
+        "customers": "number",
+        "serviceProviders": "number",
+        "admins": "number",
+        "newThisMonth": "number"
+      },
+      "businesses": {
+        "total": "number",
+        "verified": "number",
+        "pending": "number",
+        "active": "number",
+        "newThisMonth": "number"
+      },
+      "bookings": {
+        "total": "number",
+        "pending": "number",
+        "confirmed": "number",
+        "completed": "number",
+        "cancelled": "number",
+        "thisMonth": "number"
+      },
+      "revenue": {
+        "total": "number",
+        "thisMonth": "number",
+        "thisYear": "number"
+      }
+    }
+  }
+  ```
+
+#### GET /api/admin/analytics/trends
+- **Purpose**: Get time-series data for charts and trends
+- **Authorization**: `authenticate, authorize("admin")`
+- **Query Parameters**:
+  - `period` (string): "daily", "weekly", "monthly", "yearly"
+  - `startDate` (date): Start date for trend data
+  - `endDate` (date): End date for trend data
+- **Response**:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "newUsers": [
+        { "date": "date", "count": "number" }
+      ],
+      "newBusinesses": [
+        { "date": "date", "count": "number" }
+      ],
+      "bookings": [
+        { "date": "date", "count": "number" }
+      ],
+      "revenue": [
+        { "date": "date", "amount": "number" }
+      ]
+    }
+  }
+  ```
+
+## Data Models Required
+
+### AdminUser Interface (extends existing User)
+```typescript
+interface AdminUser extends User {
+  business?: {
+    _id: string;
+    name: string;
+  };
+  lastLogin?: Date;
+  accountStatus: 'active' | 'suspended' | 'deleted';
+}
+```
+
+### AdminBusiness Interface (extends existing Business)
+```typescript
+interface AdminBusiness extends Business {
+  owner: {
+    _id: string;
+    name: string;
+    email: string;
+    phone: string;
+  };
+  stats: {
+    totalServices: number;
+    totalStaff: number;
+    totalBookings: number;
+    totalRevenue: number;
+  };
+  verificationHistory: Array<{
+    verifiedBy: string;
+    verifiedAt: Date;
+    status: boolean;
+    notes?: string;
+  }>;
+}
+```
+
+### AdminBooking Interface (extends existing Booking)
+```typescript
+interface AdminBooking extends Booking {
+  customer: {
+    _id: string;
+    name: string;
+    email: string;
+    phone: string;
+  };
+  business: {
+    _id: string;
+    name: string;
+    category: string;
+  };
+  service: {
+    _id: string;
+    name: string;
+    price: number;
+  };
+  staff: {
+    _id: string;
+    name: string;
+  };
+}
+```
+
+## Implementation Notes
+
+1. **Authorization**: All admin endpoints must use `authenticate, authorize("admin")` middleware
+2. **Pagination**: Implement consistent pagination across all list endpoints
+3. **Filtering**: Support multiple filter combinations with proper query building
+4. **Search**: Implement text search across relevant fields
+5. **Error Handling**: Provide meaningful error messages for admin users
+6. **Performance**: Use database indexing for frequently queried fields
+7. **Security**: Validate all input data and prevent unauthorized access
+
+## Existing APIs That Can Be Reused
+
+- **Service Categories**: Already implemented with admin authorization
+- **Basic Business Viewing**: Can be extended for admin use
+- **Basic Booking Viewing**: Can be extended for admin use
+
+## Priority Order
+
+1. **High Priority**: User Management APIs (core admin functionality)
+2. **Medium Priority**: Business Management APIs (business oversight)
+3. **Medium Priority**: System Bookings API (system monitoring)
+4. **Low Priority**: Analytics APIs (nice to have, can use mock data initially)
+
+This implementation will enable the Admin Dashboard frontend to function with real data instead of mock data, providing administrators with full control over the service booking system.

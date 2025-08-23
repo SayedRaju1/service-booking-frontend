@@ -15,7 +15,6 @@ import {
   Building,
   Users,
   BarChart3,
-  Shield,
   Briefcase,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -31,27 +30,22 @@ const getNavigationByRole = (role: string) => {
   switch (role) {
     case "admin":
       return [
-        { name: "Dashboard", href: "/dashboard", icon: Home },
-        { name: "User Management", href: "/dashboard/users", icon: Users },
+        { name: "Dashboard", href: "/admin", icon: Home },
+        { name: "User Management", href: "/admin/users", icon: Users },
         {
           name: "Business Management",
-          href: "/dashboard/businesses",
+          href: "/admin/businesses",
           icon: Building,
         },
         {
           name: "Service Categories",
-          href: "/dashboard/categories",
+          href: "/admin/categories",
           icon: Briefcase,
         },
         {
-          name: "System Analytics",
-          href: "/dashboard/analytics",
-          icon: BarChart3,
-        },
-        {
-          name: "Admin Settings",
-          href: "/dashboard/admin-settings",
-          icon: Shield,
+          name: "System Bookings",
+          href: "/admin/bookings",
+          icon: Calendar,
         },
       ];
 

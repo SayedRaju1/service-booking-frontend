@@ -7,6 +7,7 @@ export { servicesApi } from "./services";
 export { serviceCategoriesApi } from "./service-categories";
 export { staffApi } from "./staff";
 export { staffBookingApi } from "./staff-booking";
+export { adminApi } from "./admin";
 
 // Export types
 export type {
