@@ -26,8 +26,18 @@ export function Header() {
   };
 
   const getDashboardLink = () => {
-    // Redirect to home page since dashboard isn't built yet
-    return "/";
+    if (!user) return "/";
+
+    switch (user.role) {
+      case "admin":
+        return "/admin";
+      case "service_provider":
+        return "/dashboard";
+      case "customer":
+        return "/dashboard";
+      default:
+        return "/dashboard";
+    }
   };
 
   return (
@@ -44,12 +54,6 @@ export function Header() {
             </Link>
 
             <nav className="hidden md:flex space-x-6">
-              <Link
-                href="/"
-                className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-              >
-                Home
-              </Link>
               <Link
                 href="/businesses"
                 className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
@@ -68,12 +72,19 @@ export function Header() {
               >
                 Browse Services
               </Link>
-              {isAuthenticated && (
+              {isAuthenticated ? (
                 <Link
                   href={getDashboardLink()}
                   className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
                 >
-                  Home
+                  Dashboard
+                </Link>
+              ) : (
+                <Link
+                  href="/login"
+                  className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+                >
+                  Sign In
                 </Link>
               )}
             </nav>
@@ -108,7 +119,7 @@ export function Header() {
                     className="cursor-pointer"
                   >
                     <User className="mr-2 h-4 w-4" />
-                    <span>Home</span>
+                    <span>Dashboard</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => router.push("/profile")}>
                     <Settings className="mr-2 h-4 w-4" />

@@ -20,6 +20,7 @@ import { staffApi } from "@/lib/api/staff";
 import { bookingsApi } from "@/lib/api/bookings";
 import { useRouter } from "next/navigation";
 import { PopulatedBooking } from "@/types/api";
+import Link from "next/link";
 
 export function ServiceProviderOverview() {
   const { user } = useAuthStore();
@@ -146,6 +147,29 @@ export function ServiceProviderOverview() {
 
   return (
     <div className="space-y-6">
+      {/* Back to Main App Button */}
+      <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 transition-colors"
+        >
+          <svg
+            className="h-4 w-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth="1.5"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"
+            />
+          </svg>
+          Back to Main App
+        </Link>
+      </div>
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

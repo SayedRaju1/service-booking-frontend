@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Sidebar } from "./sidebar";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -56,6 +57,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         {/* Page content */}
         <main className="py-6">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            {/* Breadcrumb navigation */}
+            <div className="mb-6">
+              <Breadcrumb items={[{ label: "Dashboard" }]} />
+            </div>
             {children}
           </div>
         </main>

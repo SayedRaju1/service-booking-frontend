@@ -138,6 +138,29 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
             </Link>
           </div>
 
+          {/* Back to Main App Link */}
+          <div className="border-b border-gray-200 pb-4">
+            <Link
+              href="/"
+              className="flex items-center gap-x-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50 px-2 py-2 rounded-md transition-colors"
+            >
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="1.5"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"
+                />
+              </svg>
+              Back to Main App
+            </Link>
+          </div>
+
           {/* Navigation */}
           <nav className="flex flex-1 flex-col">
             <ul role="list" className="flex flex-1 flex-col gap-y-7">
@@ -231,6 +254,30 @@ export function Sidebar({ open, setOpen }: SidebarProps) {
             <span className="sr-only">Close sidebar</span>
             <X className="h-6 w-6" aria-hidden="true" />
           </button>
+        </div>
+
+        {/* Back to Main App Link - Mobile */}
+        <div className="border-b border-gray-200 px-6 py-4">
+          <Link
+            href="/"
+            className="flex items-center gap-x-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50 px-2 py-2 rounded-md transition-colors"
+            onClick={() => setOpen(false)}
+          >
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth="1.5"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"
+              />
+            </svg>
+            Back to Main App
+          </Link>
         </div>
 
         <div className="flex flex-col h-full">
