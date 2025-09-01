@@ -120,3 +120,16 @@
     @apply bg-background text-foreground;
   }
 }
+@layer utilities {
+  .bb {
+    border: 1px solid #3b82f6;
+  }
+
+  .br {
+    border: 1px solid #ef4444;
+  }
+
+  .by {
+    border: 1px solid #f0f00f;
+  }
+}

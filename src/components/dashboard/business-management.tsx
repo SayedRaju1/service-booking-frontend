@@ -63,7 +63,7 @@ export function BusinessManagement() {
   const [formData, setFormData] = useState<BusinessFormData>({
     name: "",
     description: "",
-    category: "",
+    category: undefined,
     address: {
       street: "",
       city: "",
@@ -148,7 +148,7 @@ export function BusinessManagement() {
       setFormData({
         name: business.name || "",
         description: business.description || "",
-        category: business.category || "",
+        category: business.category || undefined,
         address: {
           street: business.address?.street || "",
           city: business.address?.city || "",
@@ -185,7 +185,7 @@ export function BusinessManagement() {
     setFormData((prev) => ({
       ...prev,
       address: {
-        ...prev.address,
+        ...prev.address!,
         [field]: value,
       },
     }));
@@ -195,7 +195,7 @@ export function BusinessManagement() {
     setFormData((prev) => ({
       ...prev,
       contact: {
-        ...prev.contact,
+        ...prev.contact!,
         [field]: value,
       },
     }));
@@ -209,9 +209,9 @@ export function BusinessManagement() {
     setFormData((prev) => ({
       ...prev,
       operatingHours: {
-        ...prev.operatingHours,
+        ...prev.operatingHours!,
         [day]: {
-          ...prev.operatingHours?.[day],
+          ...prev.operatingHours![day],
           [field]: value,
         },
       },
@@ -231,7 +231,7 @@ export function BusinessManagement() {
       setFormData({
         name: business.name || "",
         description: business.description || "",
-        category: business.category || "",
+        category: business.category || undefined,
         address: {
           street: business.address?.street || "",
           city: business.address?.city || "",

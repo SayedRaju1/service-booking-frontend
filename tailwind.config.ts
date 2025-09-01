@@ -8,6 +8,10 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      screens: {
+        "3xl": "1920px" /* 2K displays (1920x1080 and similar) */,
+        "4xl": "2560px" /* 4K displays (2560x1440 and similar) */,
+      },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "gradient-conic":
@@ -17,4 +21,4 @@ const config: Config = {
   },
   plugins: [],
 };
-export default config; 
+export default config;

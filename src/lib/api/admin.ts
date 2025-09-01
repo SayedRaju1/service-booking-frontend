@@ -1,5 +1,5 @@
 import apiClient from "./client";
-import { ApiResponse } from "../types/api";
+import { ApiResponse } from "../../types/api";
 
 // Admin Analytics Response Types
 export interface AdminSystemOverview {
@@ -134,6 +134,75 @@ export interface AdminBookingsResponse {
   };
 }
 
+// Admin Business Response Types
+export interface AdminBusiness {
+  _id: string;
+  name: string;
+  description: string;
+  category: string;
+  owner: {
+    _id: string;
+    name: string;
+    email: string;
+  };
+  isActive: boolean;
+  isVerified: boolean;
+  address: {
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+  };
+  phone: string;
+  email: string;
+  website?: string;
+  rating: number;
+  totalReviews: number;
+  createdAt: string;
+  stats: {
+    totalServices: number;
+    totalStaff: number;
+    totalBookings: number;
+  };
+  verificationNotes?: string;
+  verifiedAt?: string;
+  deactivationReason?: string;
+  deactivatedAt?: string;
+  recentServices?: Array<{
+    _id: string;
+    name: string;
+    price: number;
+    description?: string;
+  }>;
+  recentStaff?: Array<{
+    _id: string;
+    name: string;
+    email?: string;
+    role?: string;
+  }>;
+}
+
+export interface AdminBusinessesResponse {
+  businesses: AdminBusiness[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+  };
+}
+
+export interface VerifyBusinessRequest {
+  isVerified: boolean;
+  verificationNotes?: string;
+}
+
+export interface UpdateBusinessStatusRequest {
+  isActive: boolean;
+  deactivationReason?: string;
+}
+
 // Admin API Functions
 export const adminApi = {
   // Get system overview analytics
@@ -220,6 +289,61 @@ export const adminApi = {
 
     const response = await apiClient.get(
       `/admin/analytics/users?${queryParams}`
+    );
+    return response.data;
+  },
+
+  // Business Management API Functions
+  // Get all businesses with pagination and filtering
+  getAllBusinesses: async (params?: {
+    page?: number;
+    limit?: number;
+    category?: string;
+    status?: string;
+    verified?: boolean;
+    search?: string;
+  }): Promise<ApiResponse<AdminBusinessesResponse>> => {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append("page", params.page.toString());
+    if (params?.limit) queryParams.append("limit", params.limit.toString());
+    if (params?.category && params.category !== "all")
+      queryParams.append("category", params.category);
+    if (params?.status && params.status !== "all")
+      queryParams.append("status", params.status);
+    if (params?.verified !== undefined)
+      queryParams.append("verified", params.verified.toString());
+    if (params?.search) queryParams.append("search", params.search);
+
+    const response = await apiClient.get(`/admin/businesses?${queryParams}`);
+    return response.data;
+  },
+
+  // Get specific business details
+  getBusinessById: async (id: string): Promise<ApiResponse<AdminBusiness>> => {
+    const response = await apiClient.get(`/admin/businesses/${id}`);
+    return response.data;
+  },
+
+  // Verify or reject business
+  verifyBusiness: async (
+    id: string,
+    data: VerifyBusinessRequest
+  ): Promise<ApiResponse<AdminBusiness>> => {
+    const response = await apiClient.put(
+      `/admin/businesses/${id}/verify`,
+      data
+    );
+    return response.data;
+  },
+
+  // Update business status (activate/deactivate)
+  updateBusinessStatus: async (
+    id: string,
+    data: UpdateBusinessStatusRequest
+  ): Promise<ApiResponse<AdminBusiness>> => {
+    const response = await apiClient.put(
+      `/admin/businesses/${id}/status`,
+      data
     );
     return response.data;
   },

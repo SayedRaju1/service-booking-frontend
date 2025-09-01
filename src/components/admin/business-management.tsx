@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -33,52 +34,36 @@ import {
   Eye,
   CheckCircle,
   Clock,
+  Loader2,
+  AlertCircle,
+  ShieldCheck,
+  Ban,
+  Check,
+  X,
+  RefreshCw,
 } from "lucide-react";
+import { adminApi, AdminBusiness } from "@/lib/api/admin";
+import { toast } from "sonner";
 
-interface Business {
-  _id: string;
-  name: string;
-  description: string;
-  category: string;
-  address: {
-    street: string;
-    city: string;
-    state: string;
-    zipCode: string;
-    country: string;
-  };
-  contact: {
-    phone: string;
-    email: string;
-    website?: string;
-  };
-  isVerified: boolean;
-  isActive: boolean;
-  createdAt: string;
-  owner: {
-    _id: string;
-    name: string;
-    email: string;
-  };
-  services: Array<{
-    _id: string;
-    name: string;
-    price: number;
-  }>;
-  staff: Array<{
-    _id: string;
-    name: string;
-    role: string;
-  }>;
-}
+// Using AdminBusiness type from the API
 
 export function BusinessManagement() {
-  const [businesses, setBusinesses] = useState<Business[]>([]);
-  const [filteredBusinesses, setFilteredBusinesses] = useState<Business[]>([]);
-  const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(
-    null
+  const [businesses, setBusinesses] = useState<AdminBusiness[]>([]);
+  const [filteredBusinesses, setFilteredBusinesses] = useState<AdminBusiness[]>(
+    []
   );
+  const [selectedBusiness, setSelectedBusiness] =
+    useState<AdminBusiness | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [viewLoading, setViewLoading] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    pages: 0,
+  });
   const [filters, setFilters] = useState({
     search: "",
     category: "all",
@@ -86,164 +71,172 @@ export function BusinessManagement() {
     verification: "all",
   });
 
-  // Mock data for now - will be replaced with real API calls
-  useEffect(() => {
-    const mockBusinesses: Business[] = [
-      {
-        _id: "1",
-        name: "Beauty Haven Salon",
-        description:
-          "Premium beauty salon offering hair, makeup, and spa services",
-        category: "beauty",
-        address: {
-          street: "123 Main Street",
-          city: "New York",
-          state: "NY",
-          zipCode: "10001",
-          country: "USA",
-        },
-        contact: {
-          phone: "+1 (555) 123-4567",
-          email: "info@beautyhaven.com",
-          website: "https://beautyhaven.com",
-        },
-        isVerified: true,
-        isActive: true,
-        createdAt: "2024-01-15T10:00:00Z",
-        owner: {
-          _id: "user1",
-          name: "Sarah Johnson",
-          email: "sarah@beautyhaven.com",
-        },
-        services: [
-          { _id: "s1", name: "Hair Cut & Style", price: 75 },
-          { _id: "s2", name: "Facial Treatment", price: 120 },
-          { _id: "s3", name: "Manicure", price: 45 },
-        ],
-        staff: [
-          { _id: "staff1", name: "Sarah Johnson", role: "Owner" },
-          { _id: "staff2", name: "Emily Davis", role: "Stylist" },
-          { _id: "staff3", name: "Michael Brown", role: "Esthetician" },
-        ],
-      },
-      {
-        _id: "2",
-        name: "Dental Care Plus",
-        description: "Comprehensive dental care and orthodontic services",
-        category: "dental",
-        address: {
-          street: "456 Oak Avenue",
-          city: "Los Angeles",
-          state: "CA",
-          zipCode: "90210",
-          country: "USA",
-        },
-        contact: {
-          phone: "+1 (555) 987-6543",
-          email: "contact@dentalcareplus.com",
-          website: "https://dentalcareplus.com",
-        },
-        isVerified: true,
-        isActive: true,
-        createdAt: "2024-01-10T14:30:00Z",
-        owner: {
-          _id: "user2",
-          name: "Dr. Robert Wilson",
-          email: "dr.wilson@dentalcareplus.com",
-        },
-        services: [
-          { _id: "s4", name: "Dental Cleaning", price: 150 },
-          { _id: "s5", name: "Cavity Filling", price: 200 },
-          { _id: "s6", name: "Teeth Whitening", price: 300 },
-        ],
-        staff: [
-          { _id: "staff4", name: "Dr. Robert Wilson", role: "Dentist" },
-          { _id: "staff5", name: "Dr. Lisa Chen", role: "Orthodontist" },
-          { _id: "staff6", name: "Maria Garcia", role: "Dental Hygienist" },
-        ],
-      },
-      {
-        _id: "3",
-        name: "Fitness First Gym",
-        description:
-          "Modern fitness center with personal training and group classes",
-        category: "fitness",
-        address: {
-          street: "789 Fitness Street",
-          city: "Chicago",
-          state: "IL",
-          zipCode: "60601",
-          country: "USA",
-        },
-        contact: {
-          phone: "+1 (555) 456-7890",
-          email: "info@fitnessfirst.com",
-          website: "https://fitnessfirst.com",
-        },
-        isVerified: false,
-        isActive: true,
-        createdAt: "2024-01-20T09:15:00Z",
-        owner: {
-          _id: "user3",
-          name: "Alex Thompson",
-          email: "alex@fitnessfirst.com",
-        },
-        services: [
-          { _id: "s7", name: "Personal Training", price: 80 },
-          { _id: "s8", name: "Group Classes", price: 25 },
-          { _id: "s9", name: "Nutrition Consultation", price: 100 },
-        ],
-        staff: [
-          { _id: "staff7", name: "Alex Thompson", role: "Owner" },
-          { _id: "staff8", name: "Jake Miller", role: "Personal Trainer" },
-          { _id: "staff9", name: "Rachel Green", role: "Nutritionist" },
-        ],
-      },
-    ];
+  // Fetch businesses from API
+  const fetchBusinesses = useCallback(async () => {
+    try {
+      setLoading(true);
 
-    setBusinesses(mockBusinesses);
-    setFilteredBusinesses(mockBusinesses);
+      const response = await adminApi.getAllBusinesses({
+        page: pagination.page,
+        limit: pagination.limit,
+        category: filters.category !== "all" ? filters.category : undefined,
+        status: filters.status !== "all" ? filters.status : undefined,
+        verified:
+          filters.verification !== "all"
+            ? filters.verification === "verified"
+            : undefined,
+        search: filters.search || undefined,
+      });
+
+      if (response.success && response.data) {
+        setBusinesses(response.data.businesses);
+        setFilteredBusinesses(response.data.businesses);
+        setPagination(response.data.pagination);
+      } else {
+        toast.error(response.message || "Failed to fetch businesses");
+      }
+    } catch (err: unknown) {
+      handleApiError(err, "Failed to fetch businesses. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }, [pagination.page, pagination.limit, filters]);
+
+  // Network status monitoring
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
   }, []);
 
-  // Filter businesses based on current filters
+  // Initial load
   useEffect(() => {
-    let filtered = businesses;
+    fetchBusinesses();
+  }, [fetchBusinesses]);
 
-    if (filters.search) {
-      filtered = filtered.filter(
-        (business) =>
-          business.name.toLowerCase().includes(filters.search.toLowerCase()) ||
-          business.description
-            .toLowerCase()
-            .includes(filters.search.toLowerCase()) ||
-          business.owner.name
-            .toLowerCase()
-            .includes(filters.search.toLowerCase())
+  // Refetch when filters change
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      fetchBusinesses();
+    }, 500); // Debounce search
+
+    return () => clearTimeout(timeoutId);
+  }, [fetchBusinesses]);
+
+  // Handle business verification
+  const handleVerifyBusiness = async (
+    businessId: string,
+    isVerified: boolean,
+    notes?: string
+  ) => {
+    try {
+      setLoading(true);
+      const response = await adminApi.verifyBusiness(businessId, {
+        isVerified,
+        verificationNotes: notes,
+      });
+
+      if (response.success && response.data) {
+        // Update the selected business in the modal
+        if (selectedBusiness && selectedBusiness._id === businessId) {
+          setSelectedBusiness(response.data);
+        }
+
+        // Update the business in the main list
+        setBusinesses((prev) =>
+          prev.map((business) =>
+            business._id === businessId ? response.data! : business
+          )
+        );
+
+        // Update filtered businesses
+        setFilteredBusinesses((prev) =>
+          prev.map((business) =>
+            business._id === businessId ? response.data! : business
+          )
+        );
+
+        // Show success toast
+        toast.success(
+          isVerified
+            ? "Business verified successfully!"
+            : "Business verification rejected successfully!"
+        );
+      } else {
+        // Show error toast
+        toast.error(
+          response.message || "Failed to update business verification"
+        );
+      }
+    } catch (err: unknown) {
+      handleApiError(
+        err,
+        "Failed to update business verification. Please try again."
       );
+    } finally {
+      setLoading(false);
     }
+  };
 
-    if (filters.category !== "all") {
-      filtered = filtered.filter(
-        (business) => business.category === filters.category
+  // Handle business status update
+  const handleUpdateBusinessStatus = async (
+    businessId: string,
+    isActive: boolean,
+    reason?: string
+  ) => {
+    try {
+      setLoading(true);
+      const response = await adminApi.updateBusinessStatus(businessId, {
+        isActive,
+        deactivationReason: reason,
+      });
+
+      if (response.success && response.data) {
+        // Update the selected business in the modal
+        if (selectedBusiness && selectedBusiness._id === businessId) {
+          setSelectedBusiness(response.data);
+        }
+
+        // Update the business in the main list
+        setBusinesses((prev) =>
+          prev.map((business) =>
+            business._id === businessId ? response.data! : business
+          )
+        );
+
+        // Update filtered businesses
+        setFilteredBusinesses((prev) =>
+          prev.map((business) =>
+            business._id === businessId ? response.data! : business
+          )
+        );
+
+        // Show success toast
+        toast.success(
+          isActive
+            ? "Business activated successfully!"
+            : "Business deactivated successfully!"
+        );
+      } else {
+        // Show error toast
+        toast.error(response.message || "Failed to update business status");
+      }
+    } catch (err: unknown) {
+      handleApiError(
+        err,
+        "Failed to update business status. Please try again."
       );
+    } finally {
+      setLoading(false);
     }
-
-    if (filters.status !== "all") {
-      filtered = filtered.filter((business) =>
-        filters.status === "active" ? business.isActive : !business.isActive
-      );
-    }
-
-    if (filters.verification !== "all") {
-      filtered = filtered.filter((business) =>
-        filters.verification === "verified"
-          ? business.isVerified
-          : !business.isVerified
-      );
-    }
-
-    setFilteredBusinesses(filtered);
-  }, [businesses, filters]);
+  };
 
   const getCategoryLabel = (category: string) => {
     const categories: Record<string, string> = {
@@ -258,7 +251,7 @@ export function BusinessManagement() {
     return categories[category] || category;
   };
 
-  const getStatusBadge = (business: Business) => {
+  const getStatusBadge = (business: AdminBusiness) => {
     if (!business.isActive) {
       return <Badge variant="secondary">Inactive</Badge>;
     }
@@ -272,9 +265,60 @@ export function BusinessManagement() {
     return <Badge variant="default">Active & Verified</Badge>;
   };
 
-  const viewBusiness = (business: Business) => {
-    setSelectedBusiness(business);
-    setIsViewDialogOpen(true);
+  // Helper function to handle API errors
+  const handleApiError = (error: unknown, defaultMessage: string) => {
+    console.error("API Error:", error);
+
+    if (error && typeof error === "object" && "code" in error) {
+      const err = error as {
+        code?: string;
+        message?: string;
+        response?: { status?: number; data?: { message?: string } };
+      };
+
+      if (err.code === "NETWORK_ERROR" || err.message === "Network Error") {
+        toast.error(
+          "Network error: Unable to connect to the server. Please check your connection and try again."
+        );
+      } else if (err.response?.status === 404) {
+        toast.error(
+          "Resource not found. Please refresh the page and try again."
+        );
+      } else if (err.response?.status === 500) {
+        toast.error(
+          "Server error: Something went wrong on our end. Please try again later."
+        );
+      } else if (err.response?.data?.message) {
+        toast.error(err.response.data.message);
+      } else {
+        toast.error(defaultMessage);
+      }
+    } else {
+      toast.error(defaultMessage);
+    }
+  };
+
+  const viewBusiness = async (business: AdminBusiness) => {
+    try {
+      // Open modal immediately with loading state
+      setIsViewDialogOpen(true);
+      setViewLoading(true);
+
+      const response = await adminApi.getBusinessById(business._id);
+
+      if (response.success && response.data) {
+        setSelectedBusiness(response.data);
+      } else {
+        toast.error(response.message || "Failed to fetch business details");
+      }
+    } catch (err: unknown) {
+      handleApiError(
+        err,
+        "Failed to fetch business details. Please try again."
+      );
+    } finally {
+      setViewLoading(false);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -286,7 +330,7 @@ export function BusinessManagement() {
   };
 
   const stats = {
-    total: businesses.length,
+    total: pagination.total,
     verified: businesses.filter((b) => b.isVerified).length,
     pending: businesses.filter((b) => !b.isVerified).length,
     active: businesses.filter((b) => b.isActive).length,
@@ -304,10 +348,28 @@ export function BusinessManagement() {
             Manage all registered businesses in the system
           </p>
         </div>
+        <div className="flex items-center gap-3">
+          {!isOnline && (
+            <div className="flex items-center gap-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg">
+              <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+              <span className="text-sm text-red-700 font-medium">Offline</span>
+            </div>
+          )}
+          <Button
+            variant="outline"
+            onClick={fetchBusinesses}
+            disabled={loading}
+          >
+            <RefreshCw
+              className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`}
+            />
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {/* Statistics */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -368,8 +430,8 @@ export function BusinessManagement() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-4">
-            <div>
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="sm:col-span-2 lg:col-span-1">
               <Input
                 placeholder="Search businesses..."
                 value={filters.search}
@@ -441,185 +503,548 @@ export function BusinessManagement() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {filteredBusinesses.map((business) => (
-              <div
-                key={business._id}
-                className="flex items-center justify-between p-4 border rounded-lg"
-              >
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                    <Building2 className="h-6 w-6 text-gray-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium">{business.name}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {business.description}
-                    </p>
-                    <div className="flex items-center space-x-4 mt-1">
-                      <span className="text-xs text-muted-foreground">
-                        {getCategoryLabel(business.category)}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        Owner: {business.owner.name}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        Joined: {formatDate(business.createdAt)}
-                      </span>
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin mr-2" />
+              <span>Loading businesses...</span>
+            </div>
+          ) : filteredBusinesses.length === 0 ? (
+            <div className="text-center py-8">
+              <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">No businesses found</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {filteredBusinesses.map((business) => (
+                <div
+                  key={business._id}
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg gap-3"
+                >
+                  <div className="flex items-start space-x-4 min-w-0 flex-1">
+                    <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Building2 className="h-6 w-6 text-gray-600" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-medium truncate">{business.name}</h3>
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {business.description}
+                      </p>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 mt-1">
+                        <span className="text-xs text-muted-foreground">
+                          {getCategoryLabel(business.category)}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          Owner: {business.owner.name}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          Joined: {formatDate(business.createdAt)}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="flex items-center space-x-3">
-                  {getStatusBadge(business)}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => viewBusiness(business)}
-                  >
-                    <Eye className="h-4 w-4 mr-2" />
-                    View Details
-                  </Button>
+                  <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                    {getStatusBadge(business)}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => viewBusiness(business)}
+                      className="text-xs sm:text-sm transition-all duration-200 hover:scale-105"
+                    >
+                      <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                      <span className="hidden sm:inline">View Details</span>
+                      <span className="sm:hidden">View</span>
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Business Details Dialog */}
-      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>{selectedBusiness?.name}</DialogTitle>
-            <DialogDescription>
-              Business details and information
-            </DialogDescription>
-          </DialogHeader>
-
-          {selectedBusiness && (
-            <div className="space-y-6">
-              {/* Basic Info */}
-              <div>
-                <h3 className="font-medium mb-2">Basic Information</h3>
-                <div className="grid gap-2 text-sm">
-                  <p>
-                    <span className="font-medium">Description:</span>{" "}
-                    {selectedBusiness.description}
-                  </p>
-                  <p>
-                    <span className="font-medium">Category:</span>{" "}
-                    {getCategoryLabel(selectedBusiness.category)}
-                  </p>
-                  <p>
-                    <span className="font-medium">Status:</span>{" "}
-                    {getStatusBadge(selectedBusiness)}
-                  </p>
-                  <p>
-                    <span className="font-medium">Created:</span>{" "}
-                    {formatDate(selectedBusiness.createdAt)}
-                  </p>
-                </div>
+      {/* Pagination Controls */}
+      {pagination.pages > 1 && (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-muted-foreground">
+                Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
+                {Math.min(pagination.page * pagination.limit, pagination.total)}{" "}
+                of {pagination.total} businesses
               </div>
-
-              {/* Owner Info */}
-              <div>
-                <h3 className="font-medium mb-2">Owner Information</h3>
-                <div className="grid gap-2 text-sm">
-                  <p>
-                    <span className="font-medium">Name:</span>{" "}
-                    {selectedBusiness.owner.name}
-                  </p>
-                  <p>
-                    <span className="font-medium">Email:</span>{" "}
-                    {selectedBusiness.owner.email}
-                  </p>
-                </div>
-              </div>
-
-              {/* Address */}
-              <div>
-                <h3 className="font-medium mb-2">Address</h3>
-                <div className="flex items-center space-x-2 text-sm">
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
-                  <span>
-                    {selectedBusiness.address.street},{" "}
-                    {selectedBusiness.address.city},{" "}
-                    {selectedBusiness.address.state}{" "}
-                    {selectedBusiness.address.zipCode},{" "}
-                    {selectedBusiness.address.country}
-                  </span>
-                </div>
-              </div>
-
-              {/* Contact */}
-              <div>
-                <h3 className="font-medium mb-2">Contact Information</h3>
-                <div className="grid gap-2 text-sm">
-                  <div className="flex items-center space-x-2">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                    <span>{selectedBusiness.contact.phone}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    <span>{selectedBusiness.contact.email}</span>
-                  </div>
-                  {selectedBusiness.contact.website && (
-                    <div className="flex items-center space-x-2">
-                      <Building2 className="h-4 w-4 text-muted-foreground" />
-                      <a
-                        href={selectedBusiness.contact.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline"
-                      >
-                        {selectedBusiness.contact.website}
-                      </a>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Services */}
-              <div>
-                <h3 className="font-medium mb-2">
-                  Services ({selectedBusiness.services.length})
-                </h3>
-                <div className="grid gap-2">
-                  {selectedBusiness.services.map((service) => (
-                    <div
-                      key={service._id}
-                      className="flex justify-between items-center p-2 bg-gray-50 rounded"
-                    >
-                      <span className="text-sm">{service.name}</span>
-                      <span className="text-sm font-medium">
-                        ${service.price}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Staff */}
-              <div>
-                <h3 className="font-medium mb-2">
-                  Staff ({selectedBusiness.staff.length})
-                </h3>
-                <div className="grid gap-2">
-                  {selectedBusiness.staff.map((member) => (
-                    <div
-                      key={member._id}
-                      className="flex justify-between items-center p-2 bg-gray-50 rounded"
-                    >
-                      <span className="text-sm">{member.name}</span>
-                      <span className="text-sm text-muted-foreground">
-                        {member.role}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    setPagination((prev) => ({ ...prev, page: prev.page - 1 }))
+                  }
+                  disabled={pagination.page <= 1 || loading}
+                >
+                  Previous
+                </Button>
+                <span className="text-sm">
+                  Page {pagination.page} of {pagination.pages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    setPagination((prev) => ({ ...prev, page: prev.page + 1 }))
+                  }
+                  disabled={pagination.page >= pagination.pages || loading}
+                >
+                  Next
+                </Button>
               </div>
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Business Details Dialog */}
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+        <DialogContent
+          className="
+          max-w-[95vw] max-h-[95vh] 
+          sm:max-w-[90vw] sm:max-h-[90vh]
+          md:max-w-[85vw] md:max-h-[90vh]
+          lg:max-w-[80vw] lg:max-h-[90vh]
+          xl:max-w-[75vw] xl:max-h-[90vh]
+          2xl:max-w-[65vw] 2xl:max-h-[90vh]
+          3xl:max-w-[60vw] 3xl:max-h-[90vh]
+          4xl:max-w-[55vw] 4xl:max-h-[90vh]
+          overflow-hidden
+        "
+          showCloseButton={false}
+        >
+          <DialogHeader className="pb-4 border-b bg-white sticky top-0 z-10">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <DialogTitle className="text-2xl font-bold flex items-center gap-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <Building2 className="h-6 w-6 text-white" />
+                  </div>
+                  {selectedBusiness?.name}
+                </DialogTitle>
+                {/* Status badge - shows below business name on small screens, to the right on large screens */}
+                {selectedBusiness && (
+                  <div className="flex items-center gap-2 sm:ml-4">
+                    {getStatusBadge(selectedBusiness)}
+                  </div>
+                )}
+              </div>
+              {/* Close button - positioned absolutely to avoid layout conflicts */}
+              <DialogClose className="absolute top-4 right-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+                <X className="h-4 w-4" />
+                <span className="sr-only">Close</span>
+              </DialogClose>
+            </div>
+          </DialogHeader>
+
+          {viewLoading ? (
+            <div className="flex items-center justify-center py-16">
+              <div className="text-center">
+                <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-blue-600" />
+                <p className="text-lg font-medium text-gray-900">
+                  Loading business details...
+                </p>
+                <p className="text-sm text-gray-600 mt-2">
+                  Please wait while we fetch the information
+                </p>
+              </div>
+            </div>
+          ) : (
+            selectedBusiness && (
+              <div
+                className="
+              space-y-6 overflow-y-auto px-1
+              max-h-[calc(95vh-120px)]
+              sm:max-h-[calc(90vh-120px)]
+              md:max-h-[calc(90vh-120px)]
+              lg:max-h-[calc(90vh-120px)]
+              xl:max-h-[calc(90vh-120px)]
+              2xl:max-h-[calc(90vh-120px)]
+              3xl:max-h-[calc(90vh-120px)]
+              4xl:max-h-[calc(90vh-120px)]
+            "
+              >
+                {/* Action Buttons */}
+                <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-semibold text-gray-900">
+                          Business Actions
+                        </h3>
+                        <p className="text-sm text-gray-600">
+                          Manage verification and status
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {!selectedBusiness.isVerified && (
+                          <Button
+                            onClick={() =>
+                              handleVerifyBusiness(selectedBusiness._id, true)
+                            }
+                            disabled={loading}
+                            className="bg-green-600 hover:bg-green-700 text-white shadow-md"
+                          >
+                            <ShieldCheck className="h-4 w-4 mr-2" />
+                            Verify Business
+                          </Button>
+                        )}
+                        {selectedBusiness.isVerified && (
+                          <Button
+                            variant="outline"
+                            onClick={() =>
+                              handleVerifyBusiness(selectedBusiness._id, false)
+                            }
+                            disabled={loading}
+                            className="text-red-600 border-red-600 hover:bg-red-50 shadow-md"
+                          >
+                            <X className="h-4 w-4 mr-2" />
+                            Reject Verification
+                          </Button>
+                        )}
+                        {selectedBusiness.isActive && (
+                          <Button
+                            variant="outline"
+                            onClick={() =>
+                              handleUpdateBusinessStatus(
+                                selectedBusiness._id,
+                                false
+                              )
+                            }
+                            disabled={loading}
+                            className="text-red-600 border-red-600 hover:bg-red-50 shadow-md"
+                          >
+                            <Ban className="h-4 w-4 mr-2" />
+                            Deactivate
+                          </Button>
+                        )}
+                        {!selectedBusiness.isActive && (
+                          <Button
+                            onClick={() =>
+                              handleUpdateBusinessStatus(
+                                selectedBusiness._id,
+                                true
+                              )
+                            }
+                            disabled={loading}
+                            className="bg-green-600 hover:bg-green-700 text-white shadow-md"
+                          >
+                            <Check className="h-4 w-4 mr-2" />
+                            Activate
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Basic Info */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Building2 className="h-5 w-5 text-blue-600" />
+                      Basic Information
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-500">
+                          Description
+                        </label>
+                        <p className="text-sm text-gray-900 bg-gray-50 p-3 rounded-lg">
+                          {selectedBusiness.description}
+                        </p>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-gray-500">
+                            Category
+                          </label>
+                          <div className="text-sm text-gray-900">
+                            {getCategoryLabel(selectedBusiness.category)}
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-gray-500">
+                            Created
+                          </label>
+                          <div className="text-sm text-gray-900">
+                            {formatDate(selectedBusiness.createdAt)}
+                          </div>
+                        </div>
+                      </div>
+                      {selectedBusiness.verificationNotes && (
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-gray-500">
+                            Verification Notes
+                          </label>
+                          <p className="text-sm text-gray-900 bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                            {selectedBusiness.verificationNotes}
+                          </p>
+                        </div>
+                      )}
+                      {selectedBusiness.deactivationReason && (
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-gray-500">
+                            Deactivation Reason
+                          </label>
+                          <p className="text-sm text-gray-900 bg-red-50 p-3 rounded-lg border border-red-200">
+                            {selectedBusiness.deactivationReason}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Owner Info */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
+                        <span className="text-white text-sm font-semibold">
+                          {selectedBusiness.owner.name.charAt(0)}
+                        </span>
+                      </div>
+                      Owner Information
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-500">
+                          Name
+                        </label>
+                        <div className="text-sm text-gray-900 font-medium">
+                          {selectedBusiness.owner.name}
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-500">
+                          Email
+                        </label>
+                        <div className="text-sm text-gray-900">
+                          <a
+                            href={`mailto:${selectedBusiness.owner.email}`}
+                            className="text-blue-600 hover:text-blue-800 hover:underline"
+                          >
+                            {selectedBusiness.owner.email}
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Address & Contact */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Address */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <MapPin className="h-5 w-5 text-red-600" />
+                        Address
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-start space-x-3">
+                        <MapPin className="h-5 w-5 text-gray-400 mt-0.5" />
+                        <div className="text-sm text-gray-900">
+                          <div className="font-medium">
+                            {selectedBusiness.address.street}
+                          </div>
+                          <div>
+                            {selectedBusiness.address.city},{" "}
+                            {selectedBusiness.address.state}{" "}
+                            {selectedBusiness.address.zipCode}
+                          </div>
+                          <div className="text-gray-600">
+                            {selectedBusiness.address.country}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Contact */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Phone className="h-5 w-5 text-green-600" />
+                        Contact Information
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <div className="flex items-center space-x-3">
+                          <Phone className="h-4 w-4 text-gray-400" />
+                          <a
+                            href={`tel:${selectedBusiness.phone}`}
+                            className="text-sm text-gray-900 hover:text-blue-600 hover:underline"
+                          >
+                            {selectedBusiness.phone}
+                          </a>
+                        </div>
+                        <div className="flex items-center space-x-3">
+                          <Mail className="h-4 w-4 text-gray-400" />
+                          <a
+                            href={`mailto:${selectedBusiness.email}`}
+                            className="text-sm text-gray-900 hover:text-blue-600 hover:underline"
+                          >
+                            {selectedBusiness.email}
+                          </a>
+                        </div>
+                        {selectedBusiness.website && (
+                          <div className="flex items-center space-x-3">
+                            <Building2 className="h-4 w-4 text-gray-400" />
+                            <a
+                              href={selectedBusiness.website}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                            >
+                              {selectedBusiness.website}
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Services & Staff */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Services */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
+                          <span className="text-white text-sm font-semibold">
+                            S
+                          </span>
+                        </div>
+                        Services ({selectedBusiness.stats.totalServices})
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {selectedBusiness.recentServices &&
+                      selectedBusiness.recentServices.length > 0 ? (
+                        <div className="space-y-3">
+                          {selectedBusiness.recentServices.map((service) => (
+                            <div
+                              key={service._id}
+                              className="flex justify-between items-center p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-100"
+                            >
+                              <div>
+                                <span className="text-sm font-medium text-gray-900">
+                                  {service.name}
+                                </span>
+                                {service.description && (
+                                  <p className="text-xs text-gray-600 mt-1">
+                                    {service.description}
+                                  </p>
+                                )}
+                              </div>
+                              <span className="text-sm font-semibold text-purple-600">
+                                ${service.price}
+                              </span>
+                            </div>
+                          ))}
+                          {selectedBusiness.stats.totalServices >
+                            selectedBusiness.recentServices.length && (
+                            <div className="text-center py-2">
+                              <span className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                                +
+                                {selectedBusiness.stats.totalServices -
+                                  selectedBusiness.recentServices.length}{" "}
+                                more services
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="text-center py-6">
+                          <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                            <span className="text-gray-400 text-lg">📋</span>
+                          </div>
+                          <p className="text-sm text-gray-500">
+                            No services available
+                          </p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Staff */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center">
+                          <span className="text-white text-sm font-semibold">
+                            👥
+                          </span>
+                        </div>
+                        Staff ({selectedBusiness.stats.totalStaff})
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {selectedBusiness.recentStaff &&
+                      selectedBusiness.recentStaff.length > 0 ? (
+                        <div className="space-y-3">
+                          {selectedBusiness.recentStaff.map((member) => (
+                            <div
+                              key={member._id}
+                              className="flex items-center space-x-3 p-3 bg-gradient-to-r from-orange-50 to-red-50 rounded-lg border border-orange-100"
+                            >
+                              <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center">
+                                <span className="text-white text-xs font-semibold">
+                                  {member.name.charAt(0)}
+                                </span>
+                              </div>
+                              <div className="flex-1">
+                                <span className="text-sm font-medium text-gray-900">
+                                  {member.name}
+                                </span>
+                                <p className="text-xs text-gray-600">
+                                  {member.role || member.email}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                          {selectedBusiness.stats.totalStaff >
+                            selectedBusiness.recentStaff.length && (
+                            <div className="text-center py-2">
+                              <span className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                                +
+                                {selectedBusiness.stats.totalStaff -
+                                  selectedBusiness.recentStaff.length}{" "}
+                                more staff
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="text-center py-6">
+                          <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                            <span className="text-gray-400 text-lg">👥</span>
+                          </div>
+                          <p className="text-sm text-gray-500">
+                            No staff members
+                          </p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )
           )}
         </DialogContent>
       </Dialog>
