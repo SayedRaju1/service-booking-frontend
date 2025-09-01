@@ -39,7 +39,17 @@ export default function ServiceDetailPage() {
     error,
   } = useQuery({
     queryKey: ["service", serviceId],
-    queryFn: () => servicesApi.getServiceById(serviceId),
+    queryFn: async () => {
+      console.log("Fetching service with ID:", serviceId);
+      try {
+        const result = await servicesApi.getService(serviceId);
+        console.log("Service API response:", result);
+        return result;
+      } catch (err) {
+        console.error("Error fetching service:", err);
+        throw err;
+      }
+    },
     enabled: !!serviceId,
   });
 
@@ -48,6 +58,35 @@ export default function ServiceDetailPage() {
   // Use business data directly from service response
   const business =
     typeof service?.business === "string" ? null : service?.business;
+
+  // Log the service data for debugging
+  console.log("Service data:", service);
+  console.log("Business data:", business);
+
+  // Check if service is active
+  if (service && service.isActive === false) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center py-12">
+            <div className="text-amber-600 mb-4">
+              <div className="text-lg font-medium mb-2">
+                Service Unavailable
+              </div>
+              <div className="text-sm text-gray-600 mb-4">
+                This service is currently inactive and not available for
+                booking.
+              </div>
+            </div>
+            <Link href="/services">
+              <Button>Back to Services</Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -65,14 +104,70 @@ export default function ServiceDetailPage() {
     );
   }
 
-  if (error || !service) {
+  if (error) {
+    // Extract error details for better debugging
+    const errorMessage =
+      error instanceof Error
+        ? error.message
+        : error?.response?.data?.message ||
+          error?.message ||
+          "Failed to load service details";
+
+    const errorStatus = error?.response?.status;
+
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center py-12">
             <div className="text-red-600 mb-4">
-              Failed to load service details. Please try again.
+              <div className="text-lg font-medium mb-2">
+                {errorStatus === 404
+                  ? "Service not found"
+                  : "Failed to load service details"}
+              </div>
+              <div className="text-sm text-gray-600 mb-4">{errorMessage}</div>
+              {errorStatus && (
+                <div className="text-xs text-gray-500 mb-4">
+                  Error Code: {errorStatus}
+                </div>
+              )}
+            </div>
+            <div className="space-y-3">
+              <Link href="/services">
+                <Button>Back to Services</Button>
+              </Link>
+              <Button
+                variant="outline"
+                onClick={() => window.location.reload()}
+                className="ml-3"
+              >
+                Try Again
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if service data is properly structured (only after successful API call)
+  if (serviceData && (!service || !service._id || !service.name)) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center py-12">
+            <div className="text-red-600 mb-4">
+              <div className="text-lg font-medium mb-2">
+                Invalid Service Data
+              </div>
+              <div className="text-sm text-gray-600 mb-4">
+                The service data received is incomplete or malformed.
+              </div>
+              <div className="text-xs text-gray-500 mb-4">
+                Received data: {JSON.stringify(serviceData, null, 2)}
+              </div>
             </div>
             <Link href="/services">
               <Button>Back to Services</Button>
@@ -355,6 +450,34 @@ export default function ServiceDetailPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Debug Information - Only show in development */}
+        {process.env.NODE_ENV === "development" && (
+          <div className="mb-8">
+            <details className="bg-gray-100 rounded-lg p-4">
+              <summary className="cursor-pointer text-sm font-medium text-gray-700 mb-2">
+                Debug Information (Development Only)
+              </summary>
+              <div className="text-xs text-gray-600 space-y-1">
+                <div>Service ID: {serviceId}</div>
+                <div>Service Active: {service?.isActive ? "Yes" : "No"}</div>
+                <div>
+                  Business ID:{" "}
+                  {typeof service?.business === "string"
+                    ? service.business
+                    : service?.business?._id}
+                </div>
+                <div>
+                  Category ID:{" "}
+                  {typeof service?.category === "string"
+                    ? service.category
+                    : service?.category?._id}
+                </div>
+                <div>API Response: {JSON.stringify(serviceData, null, 2)}</div>
+              </div>
+            </details>
+          </div>
+        )}
       </div>
     </div>
   );

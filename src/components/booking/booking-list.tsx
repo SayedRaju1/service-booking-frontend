@@ -225,7 +225,7 @@ function BookingCard({
 }) {
   const { data: serviceData } = useQuery({
     queryKey: ["service", booking.service],
-    queryFn: () => servicesApi.getServiceById(booking.service),
+    queryFn: () => servicesApi.getService(booking.service),
     enabled: !!booking.service,
   });
 

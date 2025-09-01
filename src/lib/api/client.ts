@@ -45,6 +45,27 @@ apiClient.interceptors.response.use(
       }
     }
 
+    // Handle network errors
+    if (error.code === "ECONNREFUSED" || error.code === "ERR_NETWORK") {
+      error.message =
+        "Unable to connect to the server. Please check if the backend is running.";
+    }
+
+    // Handle timeout errors
+    if (error.code === "ECONNABORTED") {
+      error.message = "Request timed out. Please try again.";
+    }
+
+    // Handle 404 errors
+    if (error.response?.status === 404) {
+      error.message = "Resource not found.";
+    }
+
+    // Handle 500 errors
+    if (error.response?.status >= 500) {
+      error.message = "Server error. Please try again later.";
+    }
+
     return Promise.reject(error);
   }
 );
