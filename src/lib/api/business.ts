@@ -35,7 +35,9 @@ export const businessApi = {
   },
 
   // Get business by ID
-  getBusiness: async (id: string): Promise<ApiResponse<Business>> => {
+  getBusiness: async (
+    id: string
+  ): Promise<ApiResponse<{ business: Business }>> => {
     const response = await apiClient.get(`/businesses/${id}`);
     return response.data;
   },

@@ -43,7 +43,7 @@ export default function BusinessDetailPage() {
     error,
   } = useQuery({
     queryKey: ["business", businessId],
-    queryFn: () => businessApi.getBusinessById(businessId),
+    queryFn: () => businessApi.getBusiness(businessId),
     enabled: !!businessId,
   });
 
@@ -52,7 +52,7 @@ export default function BusinessDetailPage() {
   // Fetch services for this business
   const { data: servicesData, isLoading: servicesLoading } = useQuery({
     queryKey: ["business-services", businessId],
-    queryFn: () => servicesApi.getServicesByBusiness(businessId, { limit: 6 }),
+    queryFn: () => servicesApi.getServicesByBusiness(businessId),
     enabled: !!businessId,
   });
 
@@ -219,7 +219,7 @@ export default function BusinessDetailPage() {
                     <div>
                       <div className="font-medium">
                         {Object.values(business.operatingHours).some(
-                          (hours: { isOpen: boolean }) => hours.isOpen
+                          (hours) => (hours as { isOpen: boolean }).isOpen
                         )
                           ? "Open now"
                           : "Closed"}

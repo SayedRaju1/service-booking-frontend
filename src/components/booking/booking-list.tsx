@@ -231,7 +231,7 @@ function BookingCard({
 
   const { data: businessData } = useQuery({
     queryKey: ["business", booking.business],
-    queryFn: () => businessApi.getBusinessById(booking.business),
+    queryFn: () => businessApi.getBusiness(booking.business),
     enabled: !!booking.business,
   });
 
