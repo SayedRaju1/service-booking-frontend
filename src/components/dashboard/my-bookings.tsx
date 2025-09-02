@@ -14,12 +14,13 @@ import {
   AlertCircle,
   Filter,
   Eye,
-  Edit,
   Trash2,
   RefreshCw,
+  MapPin,
 } from "lucide-react";
 import { toast } from "sonner";
 import { bookingsApi } from "@/lib/api/bookings";
+import { useAuthStore } from "@/stores/auth";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -45,7 +46,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -55,7 +55,8 @@ interface BookingFilters {
   endDate: string;
 }
 
-export function CustomerBookings() {
+export function MyBookings() {
+  const { user } = useAuthStore();
   const [filters, setFilters] = useState<BookingFilters>({
     status: "all",
     startDate: "",
@@ -63,36 +64,9 @@ export function CustomerBookings() {
   });
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
 
   const queryClient = useQueryClient();
-
-  // Note: Statistics will be calculated from the main query data for consistency
-
-  // Update booking status mutation
-  const updateStatusMutation = useMutation({
-    mutationFn: ({
-      id,
-      status,
-      cancellationReason,
-    }: {
-      id: string;
-      status: string;
-      cancellationReason?: string;
-    }) => bookingsApi.updateBookingStatus(id, { status, cancellationReason }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["customerBookings"] });
-      toast.success("Booking status updated successfully!");
-      setIsEditModalOpen(false);
-      setSelectedBooking(null);
-    },
-    onError: (error: any) => {
-      toast.error(
-        error.response?.data?.message || "Failed to update booking status"
-      );
-    },
-  });
 
   // Cancel booking mutation
   const cancelBookingMutation = useMutation({
@@ -104,9 +78,9 @@ export function CustomerBookings() {
       cancellationReason?: string;
     }) => bookingsApi.cancelBooking(id, { cancellationReason }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["customerBookings"] });
+      queryClient.invalidateQueries({ queryKey: ["myBookings"] });
       toast.success("Booking cancelled successfully!");
-      setIsDeleteModalOpen(false);
+      setIsCancelModalOpen(false);
       setSelectedBooking(null);
     },
     onError: (error: any) => {
@@ -117,17 +91,17 @@ export function CustomerBookings() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "pending":
-        return "bg-yellow-100 text-yellow-800";
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
       case "confirmed":
-        return "bg-blue-100 text-blue-800";
+        return "bg-blue-100 text-blue-800 border-blue-200";
       case "completed":
-        return "bg-green-100 text-green-800";
+        return "bg-green-100 text-green-800 border-green-200";
       case "cancelled":
-        return "bg-red-100 text-red-800";
+        return "bg-red-100 text-red-800 border-red-200";
       case "no_show":
-        return "bg-gray-100 text-gray-800";
+        return "bg-gray-100 text-gray-800 border-gray-200";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-gray-100 text-gray-800 border-gray-200";
     }
   };
 
@@ -194,15 +168,13 @@ export function CustomerBookings() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["customerBookings", debouncedFilters],
+    queryKey: ["myBookings", debouncedFilters],
     queryFn: () =>
-      bookingsApi.getBusinessBookings({
+      bookingsApi.getMyBookings({
         status:
           debouncedFilters.status === "all"
             ? undefined
             : debouncedFilters.status,
-        startDate: debouncedFilters.startDate || undefined,
-        endDate: debouncedFilters.endDate || undefined,
         page: 1,
         limit: 1000, // Get more data for better client-side filtering
       }),
@@ -215,9 +187,77 @@ export function CustomerBookings() {
   // Use the same dataset for statistics to ensure consistency
   const allBookings = allBookingsFromApi;
 
-  // Use API data directly since getBusinessBookings supports server-side filtering
-  const bookings = allBookingsFromApi;
-  const filteredAllBookings = allBookings;
+  // Apply client-side date filtering since getMyBookings doesn't support date filters
+  const bookings = allBookingsFromApi.filter((booking: any) => {
+    if (!debouncedFilters.startDate && !debouncedFilters.endDate) {
+      return true;
+    }
+
+    try {
+      const bookingDate = new Date(booking.appointmentDate);
+      if (isNaN(bookingDate.getTime())) {
+        return false; // Invalid date
+      }
+
+      // Set time to start of day for start date comparison
+      const startDate = debouncedFilters.startDate
+        ? new Date(debouncedFilters.startDate + "T00:00:00.000Z")
+        : null;
+
+      // Set time to end of day for end date comparison
+      const endDate = debouncedFilters.endDate
+        ? new Date(debouncedFilters.endDate + "T23:59:59.999Z")
+        : null;
+
+      if (startDate && bookingDate < startDate) {
+        return false;
+      }
+      if (endDate && bookingDate > endDate) {
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Error filtering booking by date:", error);
+      return false;
+    }
+  });
+
+  // Apply client-side date filtering to statistics as well
+  const filteredAllBookings = allBookings.filter((booking: any) => {
+    if (!debouncedFilters.startDate && !debouncedFilters.endDate) {
+      return true;
+    }
+
+    try {
+      const bookingDate = new Date(booking.appointmentDate);
+      if (isNaN(bookingDate.getTime())) {
+        return false; // Invalid date
+      }
+
+      // Set time to start of day for start date comparison
+      const startDate = debouncedFilters.startDate
+        ? new Date(debouncedFilters.startDate + "T00:00:00.000Z")
+        : null;
+
+      // Set time to end of day for end date comparison
+      const endDate = debouncedFilters.endDate
+        ? new Date(debouncedFilters.endDate + "T23:59:59.999Z")
+        : null;
+
+      if (startDate && bookingDate < startDate) {
+        return false;
+      }
+      if (endDate && bookingDate > endDate) {
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Error filtering booking by date for statistics:", error);
+      return false;
+    }
+  });
 
   // Calculate statistics from filtered data
   const totalBookings = filteredAllBookings.length;
@@ -245,32 +285,35 @@ export function CustomerBookings() {
     });
   };
 
-  const handleStatusUpdate = (
-    bookingId: string,
-    newStatus: string,
-    cancellationReason?: string
-  ) => {
-    updateStatusMutation.mutate({
-      id: bookingId,
-      status: newStatus,
-      cancellationReason,
-    });
-  };
-
   const handleCancelBooking = (
     bookingId: string,
     cancellationReason?: string
   ) => {
-    cancelBookingMutation.mutate({ id: bookingId, cancellationReason });
+    cancelBookingMutation.mutate({
+      id: bookingId,
+      cancellationReason,
+    });
   };
 
-  if (isLoading || isLoadingStats) {
+  if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading bookings...</p>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="h-8 w-48 bg-gray-200 rounded animate-pulse mb-2"></div>
+            <div className="h-4 w-64 bg-gray-200 rounded animate-pulse"></div>
+          </div>
+          <div className="h-10 w-24 bg-gray-200 rounded animate-pulse"></div>
         </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          {[...Array(5)].map((_, i) => (
+            <div
+              key={i}
+              className="h-32 bg-gray-200 rounded animate-pulse"
+            ></div>
+          ))}
+        </div>
+        <div className="h-96 bg-gray-200 rounded animate-pulse"></div>
       </div>
     );
   }
@@ -299,17 +342,13 @@ export function CustomerBookings() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Customer Bookings
-          </h1>
-          <p className="text-gray-600">
-            Manage and track all customer appointments
-          </p>
+          <h1 className="text-2xl font-bold text-gray-900">My Bookings</h1>
+          <p className="text-gray-600">View and manage your appointments</p>
         </div>
         <Button
           variant="outline"
           onClick={() => {
-            queryClient.invalidateQueries({ queryKey: ["customerBookings"] });
+            queryClient.invalidateQueries({ queryKey: ["myBookings"] });
           }}
         >
           <RefreshCw className="h-4 w-4 mr-2" />
@@ -341,7 +380,7 @@ export function CustomerBookings() {
               {pendingBookings}
             </div>
             <p className="text-xs text-muted-foreground">
-              Awaiting confirmation
+              Pending confirmation
             </p>
           </CardContent>
         </Card>
@@ -354,7 +393,7 @@ export function CustomerBookings() {
             <div className="text-2xl font-bold text-blue-600">
               {confirmedBookings}
             </div>
-            <p className="text-xs text-muted-foreground">Ready for service</p>
+            <p className="text-xs text-muted-foreground">Confirmed</p>
           </CardContent>
         </Card>
         <Card>
@@ -366,7 +405,7 @@ export function CustomerBookings() {
             <div className="text-2xl font-bold text-green-600">
               {completedBookings}
             </div>
-            <p className="text-xs text-muted-foreground">Service delivered</p>
+            <p className="text-xs text-muted-foreground">Completed</p>
           </CardContent>
         </Card>
         <Card>
@@ -378,7 +417,7 @@ export function CustomerBookings() {
             <div className="text-2xl font-bold text-red-600">
               {cancelledBookings}
             </div>
-            <p className="text-xs text-muted-foreground">Cancelled bookings</p>
+            <p className="text-xs text-muted-foreground">Cancelled</p>
           </CardContent>
         </Card>
       </div>
@@ -458,37 +497,39 @@ export function CustomerBookings() {
           {bookings.length === 0 ? (
             <div className="text-center py-8">
               <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
                 No bookings found
               </h3>
               <p className="text-gray-600">
                 {filters.status !== "all" ||
                 filters.startDate ||
                 filters.endDate
-                  ? "Try adjusting your filters"
-                  : "Customers haven't made any bookings yet"}
+                  ? "Try adjusting your filters to see more results."
+                  : "You haven't made any bookings yet."}
               </p>
             </div>
           ) : (
             <div className="space-y-4">
               {bookings.map((booking: any) => {
                 const { date, time } = formatDateTime(booking.appointmentDate);
+
                 return (
                   <div
                     key={booking._id}
-                    className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                    className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors"
                   >
                     <div className="flex items-center gap-4 flex-1 min-w-0">
-                      <Avatar className="h-12 w-12 flex-shrink-0">
+                      <Avatar className="h-12 w-12">
+                        <AvatarImage src={booking.business?.logo} />
                         <AvatarFallback className="bg-blue-100 text-blue-600">
-                          {booking.customer?.name?.charAt(0)?.toUpperCase() ||
-                            "C"}
+                          {booking.business?.name?.charAt(0)?.toUpperCase() ||
+                            "B"}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <h3 className="font-medium text-gray-900 truncate">
-                            {booking.customer?.name || "Unknown Customer"}
+                            {booking.business?.name || "Unknown Business"}
                           </h3>
                           <Badge className={getStatusColor(booking.status)}>
                             {getStatusIcon(booking.status)}
@@ -535,27 +576,13 @@ export function CustomerBookings() {
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
-                      {booking.status === "pending" && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedBooking(booking);
-                            setIsEditModalOpen(true);
-                          }}
-                          className="h-9 w-9 p-0"
-                          title="Update status"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      )}
                       {["pending", "confirmed"].includes(booking.status) && (
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => {
                             setSelectedBooking(booking);
-                            setIsDeleteModalOpen(true);
+                            setIsCancelModalOpen(true);
                           }}
                           className="text-red-600 hover:text-red-700 hover:bg-red-50 h-9 w-9 p-0"
                           title="Cancel booking"
@@ -582,161 +609,149 @@ export function CustomerBookings() {
             </DialogDescription>
           </DialogHeader>
           {selectedBooking && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-6">
+              {/* Booking Status */}
+              <div className="flex items-center justify-between">
                 <div>
-                  <Label className="text-sm font-medium text-gray-700">
-                    Customer
-                  </Label>
-                  <div className="mt-1 p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <User className="h-4 w-4 text-gray-500" />
-                      <span className="font-medium">
-                        {selectedBooking.customer?.name}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 mt-1 text-sm text-gray-600">
-                      <Mail className="h-3 w-3" />
-                      {selectedBooking.customer?.email}
-                    </div>
-                    {selectedBooking.customer?.phone && (
-                      <div className="flex items-center gap-2 mt-1 text-sm text-gray-600">
-                        <Phone className="h-3 w-3" />
-                        {selectedBooking.customer.phone}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">
-                    Service
-                  </Label>
-                  <div className="mt-1 p-3 bg-gray-50 rounded-lg">
-                    <div className="font-medium">
-                      {selectedBooking.service?.name}
-                    </div>
-                    <div className="text-sm text-gray-600 mt-1">
-                      Duration: {selectedBooking.service?.duration} minutes
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      Price: ${selectedBooking.totalPrice}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div>
-                <Label className="text-sm font-medium text-gray-700">
-                  Appointment
-                </Label>
-                <div className="mt-1 p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-gray-500" />
-                    <span className="font-medium">
-                      {formatDateTime(selectedBooking.appointmentDate).date}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 mt-1 text-sm text-gray-600">
-                    <Clock className="h-3 w-3" />
-                    {formatDateTime(selectedBooking.appointmentDate).time}
-                  </div>
-                </div>
-              </div>
-              {selectedBooking.notes && (
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">
-                    Customer Notes
-                  </Label>
-                  <div className="mt-1 p-3 bg-gray-50 rounded-lg">
-                    {selectedBooking.notes}
-                  </div>
-                </div>
-              )}
-              <div className="flex items-center gap-2">
-                <Badge className={getStatusColor(selectedBooking.status)}>
-                  {getStatusIcon(selectedBooking.status)}
-                  {selectedBooking.status.charAt(0).toUpperCase() +
-                    selectedBooking.status.slice(1)}
-                </Badge>
-                <span className="text-sm text-gray-600">
-                  Created:{" "}
-                  {new Date(selectedBooking.createdAt).toLocaleDateString()}
-                </span>
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button onClick={() => setIsViewModalOpen(false)}>Close</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit Status Modal */}
-      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Update Booking Status</DialogTitle>
-            <DialogDescription>
-              Change the status of this booking
-            </DialogDescription>
-          </DialogHeader>
-          {selectedBooking && (
-            <div className="space-y-4">
-              <div>
-                <Label className="text-sm font-medium text-gray-700">
-                  Current Status
-                </Label>
-                <div className="mt-1">
+                  <h3 className="text-lg font-semibold">Booking Status</h3>
                   <Badge className={getStatusColor(selectedBooking.status)}>
+                    {getStatusIcon(selectedBooking.status)}
                     {selectedBooking.status.charAt(0).toUpperCase() +
                       selectedBooking.status.slice(1)}
                   </Badge>
                 </div>
+                <div className="text-right">
+                  <p className="text-sm text-gray-600">Booking ID</p>
+                  <p className="font-mono text-sm">{selectedBooking._id}</p>
+                </div>
               </div>
+
+              {/* Service Information */}
               <div>
-                <Label
-                  htmlFor="newStatus"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  New Status
-                </Label>
-                <Select
-                  id="newStatus"
-                  onValueChange={(value) => {
-                    if (value === "cancelled") {
-                      const reason = prompt(
-                        "Please provide a cancellation reason:"
-                      );
-                      if (reason !== null) {
-                        handleStatusUpdate(selectedBooking._id, value, reason);
-                      }
-                    } else {
-                      handleStatusUpdate(selectedBooking._id, value);
-                    }
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select new status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="confirmed">Confirmed</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="cancelled">Cancelled</SelectItem>
-                    <SelectItem value="no_show">No Show</SelectItem>
-                  </SelectContent>
-                </Select>
+                <h3 className="text-lg font-semibold mb-3">
+                  Service Information
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-600">Service</p>
+                    <p className="font-medium">
+                      {selectedBooking.service?.name || "Unknown Service"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Duration</p>
+                    <p className="font-medium">
+                      {selectedBooking.service?.duration ||
+                        selectedBooking.duration}{" "}
+                      minutes
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Price</p>
+                    <p className="font-medium">
+                      ${selectedBooking.totalPrice} {selectedBooking.currency}
+                    </p>
+                  </div>
+                  {selectedBooking.staff && (
+                    <div>
+                      <p className="text-sm text-gray-600">Staff Member</p>
+                      <p className="font-medium">
+                        {selectedBooking.staff.name}
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
+
+              {/* Business Information */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3">
+                  Business Information
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-600">Business Name</p>
+                    <p className="font-medium">
+                      {selectedBooking.business?.name || "Unknown Business"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Phone</p>
+                    <p className="font-medium">
+                      {selectedBooking.business?.contact?.phone || "N/A"}
+                    </p>
+                  </div>
+                  <div className="md:col-span-2">
+                    <p className="text-sm text-gray-600">Address</p>
+                    <p className="font-medium">
+                      {selectedBooking.business?.address?.street && (
+                        <>
+                          {selectedBooking.business.address.street}
+                          <br />
+                          {selectedBooking.business.address.city},{" "}
+                          {selectedBooking.business.address.state}{" "}
+                          {selectedBooking.business.address.zipCode}
+                        </>
+                      )}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Appointment Details */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3">
+                  Appointment Details
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-600">Date</p>
+                    <p className="font-medium">
+                      {formatDateTime(selectedBooking.appointmentDate).date}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Time</p>
+                    <p className="font-medium">
+                      {formatDateTime(selectedBooking.appointmentDate).time}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Created</p>
+                    <p className="font-medium">
+                      {new Date(selectedBooking.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Last Updated</p>
+                    <p className="font-medium">
+                      {new Date(selectedBooking.updatedAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Notes */}
+              {selectedBooking.notes && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">Notes</h3>
+                  <p className="text-gray-700 bg-gray-50 p-3 rounded-lg">
+                    {selectedBooking.notes}
+                  </p>
+                </div>
+              )}
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
-              Cancel
+            <Button variant="outline" onClick={() => setIsViewModalOpen(false)}>
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Cancel Booking Modal */}
-      <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+      <Dialog open={isCancelModalOpen} onOpenChange={setIsCancelModalOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Cancel Booking</DialogTitle>
@@ -747,57 +762,47 @@ export function CustomerBookings() {
           </DialogHeader>
           {selectedBooking && (
             <div className="space-y-4">
-              <div className="p-3 bg-red-50 rounded-lg">
-                <div className="font-medium text-red-900">
-                  {selectedBooking.customer?.name} -{" "}
-                  {selectedBooking.service?.name}
-                </div>
-                <div className="text-sm text-red-700 mt-1">
-                  {formatDateTime(selectedBooking.appointmentDate).date} at{" "}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h4 className="font-medium mb-2">Booking Details</h4>
+                <p className="text-sm text-gray-600">
+                  <strong>Service:</strong> {selectedBooking.service?.name}
+                </p>
+                <p className="text-sm text-gray-600">
+                  <strong>Date:</strong>{" "}
+                  {formatDateTime(selectedBooking.appointmentDate).date}
+                </p>
+                <p className="text-sm text-gray-600">
+                  <strong>Time:</strong>{" "}
                   {formatDateTime(selectedBooking.appointmentDate).time}
-                </div>
-              </div>
-              <div>
-                <Label
-                  htmlFor="cancellationReason"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Cancellation Reason (Optional)
-                </Label>
-                <Input
-                  id="cancellationReason"
-                  placeholder="e.g., Customer request, scheduling conflict..."
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      handleCancelBooking(
-                        selectedBooking._id,
-                        e.currentTarget.value
-                      );
-                    }
-                  }}
-                />
+                </p>
+                <p className="text-sm text-gray-600">
+                  <strong>Business:</strong> {selectedBooking.business?.name}
+                </p>
               </div>
             </div>
           )}
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setIsDeleteModalOpen(false)}
+              onClick={() => setIsCancelModalOpen(false)}
             >
               Keep Booking
             </Button>
             <Button
               variant="destructive"
               onClick={() => {
-                const reason = (
-                  document.getElementById(
-                    "cancellationReason"
-                  ) as HTMLInputElement
-                )?.value;
-                handleCancelBooking(selectedBooking._id, reason);
+                if (selectedBooking) {
+                  handleCancelBooking(
+                    selectedBooking._id,
+                    "Customer requested cancellation"
+                  );
+                }
               }}
+              disabled={cancelBookingMutation.isPending}
             >
-              Cancel Booking
+              {cancelBookingMutation.isPending
+                ? "Cancelling..."
+                : "Cancel Booking"}
             </Button>
           </DialogFooter>
         </DialogContent>
