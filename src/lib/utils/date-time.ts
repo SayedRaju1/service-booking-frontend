@@ -110,11 +110,34 @@ export function getNextAvailableDate(
 }
 
 /**
+ * Calculate duration in minutes from start and end time strings
+ * @param start - Start time string (ISO date string)
+ * @param end - End time string (ISO date string)
+ * @returns duration in minutes
+ */
+export function calculateDurationFromTimes(start: string, end: string): number {
+  try {
+    const startTime = new Date(start);
+    const endTime = new Date(end);
+    const diffInMs = endTime.getTime() - startTime.getTime();
+    return Math.round(diffInMs / (1000 * 60)); // Convert to minutes
+  } catch (error) {
+    console.error("Error calculating duration from times:", error);
+    return 0;
+  }
+}
+
+/**
  * Convert minutes to hours and minutes format
  * @param minutes - Total minutes
  * @returns formatted string (e.g., "1h 30min")
  */
-export function formatDuration(minutes: number): string {
+export function formatDuration(minutes: number | undefined | null): string {
+  // Handle undefined, null, or NaN values
+  if (minutes == null || isNaN(minutes) || minutes < 0) {
+    return "0min";
+  }
+
   if (minutes < 60) {
     return `${minutes}min`;
   }

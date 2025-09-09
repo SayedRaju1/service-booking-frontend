@@ -2,7 +2,11 @@
 
 import { useState, useMemo } from "react";
 import { TimeSlot } from "@/types/api";
-import { formatTimeTo12Hour, formatDuration } from "@/lib/utils/date-time";
+import {
+  formatTimeTo12Hour,
+  formatDuration,
+  calculateDurationFromTimes,
+} from "@/lib/utils/date-time";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +27,7 @@ interface TimeSlotSelectorProps {
   staffName?: string;
   serviceName?: string;
   selectedDate?: string;
+  serviceDuration?: number; // Add service duration as fallback
   isLoading?: boolean;
   error?: Error | null;
 }
@@ -34,11 +39,34 @@ export function TimeSlotSelector({
   staffName,
   serviceName,
   selectedDate,
+  serviceDuration,
   isLoading = false,
   error = null,
 }: TimeSlotSelectorProps) {
   const [timeFilter, setTimeFilter] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+
+  // Helper function to get duration with fallbacks
+  const getSlotDuration = (slot: TimeSlot): number => {
+    // First try the slot's duration property
+    if (slot.duration != null && !isNaN(slot.duration) && slot.duration > 0) {
+      return slot.duration;
+    }
+
+    // Fallback to calculating from start/end times
+    if (slot.start && slot.end) {
+      const calculatedDuration = calculateDurationFromTimes(
+        slot.start,
+        slot.end
+      );
+      if (calculatedDuration > 0) {
+        return calculatedDuration;
+      }
+    }
+
+    // Final fallback to service duration
+    return serviceDuration || 0;
+  };
 
   // Filter time slots based on time of day
   const filteredTimeSlots = useMemo(() => {
@@ -278,7 +306,7 @@ export function TimeSlotSelector({
                   )}
                 </div>
                 <div className="text-xs text-gray-500">
-                  {formatDuration(slot.duration)}
+                  {formatDuration(getSlotDuration(slot))}
                 </div>
                 {!slot.available && (
                   <Badge variant="secondary" className="text-xs mt-1">
@@ -337,7 +365,7 @@ export function TimeSlotSelector({
                               )}
                             </span>
                             <span className="text-xs text-gray-500">
-                              ({formatDuration(slot.duration)})
+                              ({formatDuration(getSlotDuration(slot))})
                             </span>
                           </div>
                         </Button>
@@ -372,8 +400,8 @@ export function TimeSlotSelector({
                   )}
                 </h4>
                 <p className="text-sm text-green-700 mt-1">
-                  Duration: {formatDuration(selectedTimeSlot.duration)} | End
-                  Time:{" "}
+                  Duration: {formatDuration(getSlotDuration(selectedTimeSlot))}{" "}
+                  | End Time:{" "}
                   {formatTimeTo12Hour(
                     new Date(selectedTimeSlot.end).toLocaleTimeString("en-US", {
                       hour: "2-digit",

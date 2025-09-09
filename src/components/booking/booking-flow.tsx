@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useStaffBooking } from "@/hooks/useStaffBooking";
 import { servicesApi } from "@/lib/api";
-import { Service } from "@/types/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -41,12 +40,14 @@ export function BookingFlow({
   // Get business services
   const { data: servicesData, isLoading: isLoadingServices } = useQuery({
     queryKey: ["business-services", businessId],
-    queryFn: () =>
-      servicesApi.getServicesByBusiness(businessId, { limit: 100 }),
+    queryFn: () => servicesApi.getServicesByBusiness(businessId),
     enabled: !!businessId,
   });
 
-  const services = servicesData?.data?.services || [];
+  const services = useMemo(
+    () => servicesData?.data?.services || [],
+    [servicesData?.data?.services]
+  );
 
   // Use the custom hook for booking state management
   const {
@@ -70,7 +71,6 @@ export function BookingFlow({
     goToPreviousStep,
     goToStep,
     createBooking,
-    resetBookingState,
     canProceedToNextStep,
     isDateAvailable,
   } = useStaffBooking();
@@ -315,6 +315,7 @@ export function BookingFlow({
                   staffName={selectedStaff.name}
                   serviceName={selectedService?.name}
                   selectedDate={selectedDate}
+                  serviceDuration={selectedService?.duration}
                   isLoading={isLoadingTimeSlots}
                   error={timeSlotsError}
                 />
@@ -372,8 +373,8 @@ export function BookingFlow({
             </div>
           )}
 
-          {/* Error Display */}
-          {(staffError || timeSlotsError || bookingError) && (
+          {/* Error Display - Only show for staff and time slot errors, not booking errors */}
+          {(staffError || timeSlotsError) && (
             <Card className="mt-6 border-red-200 bg-red-50">
               <CardContent className="pt-6">
                 <div className="flex items-center gap-3">
@@ -383,7 +384,6 @@ export function BookingFlow({
                     <p className="text-sm text-red-700 mt-1">
                       {staffError?.message ||
                         timeSlotsError?.message ||
-                        bookingError?.message ||
                         "An error occurred"}
                     </p>
                   </div>

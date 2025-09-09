@@ -5,18 +5,18 @@ import { Service, StaffWithAvailability, TimeSlot } from "@/types/api";
 import { formatTimeTo12Hour, formatDuration } from "@/lib/utils/date-time";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Calendar,
   Clock,
   User,
-  DollarSign,
   CheckCircle,
   AlertCircle,
   Info,
   Edit3,
 } from "lucide-react";
+import { useAuthStore } from "@/stores/auth";
+import { RoleRestrictionModal } from "./role-restriction-modal";
 
 interface BookingConfirmationProps {
   service: Service;
@@ -41,6 +41,9 @@ export function BookingConfirmation({
 }: BookingConfirmationProps) {
   const [notes, setNotes] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [showRoleRestrictionModal, setShowRoleRestrictionModal] =
+    useState<boolean>(false);
+  const { user } = useAuthStore();
 
   // Calculate total duration including buffer time
   const totalDuration = service.duration + (service.bufferTime || 0);
@@ -63,6 +66,12 @@ export function BookingConfirmation({
 
   // Handle booking confirmation
   const handleConfirm = async () => {
+    // Check user role before proceeding
+    if (user?.role !== "customer") {
+      setShowRoleRestrictionModal(true);
+      return;
+    }
+
     try {
       setIsSubmitting(true);
       await onConfirm(notes);
@@ -334,6 +343,13 @@ export function BookingConfirmation({
           Privacy Policy
         </a>
       </div>
+
+      {/* Role Restriction Modal */}
+      <RoleRestrictionModal
+        isOpen={showRoleRestrictionModal}
+        onClose={() => setShowRoleRestrictionModal(false)}
+        userRole={user?.role || null}
+      />
     </div>
   );
 }

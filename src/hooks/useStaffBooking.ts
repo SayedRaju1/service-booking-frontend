@@ -34,7 +34,6 @@ export function useStaffBooking() {
     data: availableStaffData,
     isLoading: isLoadingStaff,
     error: staffError,
-    refetch: refetchStaff,
   } = useQuery({
     queryKey: ["available-staff", selectedService?._id, selectedDate],
     queryFn: () =>
@@ -96,7 +95,6 @@ export function useStaffBooking() {
     data: timeSlotsData,
     isLoading: isLoadingTimeSlots,
     error: timeSlotsError,
-    refetch: refetchTimeSlots,
   } = useQuery({
     queryKey: [
       "staff-time-slots",
@@ -125,6 +123,10 @@ export function useStaffBooking() {
 
       // Reset form state
       resetBookingState();
+    },
+    onError: (error) => {
+      // The error will be handled by the component using the enhanced error object
+      console.error("Booking creation failed:", error);
     },
   });
 
