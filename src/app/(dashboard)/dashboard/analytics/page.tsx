@@ -25,7 +25,7 @@ export default function AnalyticsPage() {
           <CardContent>
             <p className="text-gray-600">
               The Analytics section will be implemented in the next phase.
-              You'll be able to view comprehensive system analytics, user
+              You&apos;ll be able to view comprehensive system analytics, user
               engagement metrics, business performance data, and other key
               performance indicators.
             </p>

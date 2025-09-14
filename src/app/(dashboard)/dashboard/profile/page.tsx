@@ -69,8 +69,8 @@ export default function CustomerProfilePage() {
   const updateProfileMutation = useMutation({
     mutationFn: (data: Partial<ProfileFormData>) => authApi.updateProfile(data),
     onSuccess: (response) => {
-      if (response.data?.user) {
-        setUser(response.data.user);
+      if (response.data) {
+        setUser(response.data);
         queryClient.invalidateQueries({ queryKey: ["user-profile"] });
         setIsEditing(false);
       }
@@ -86,7 +86,7 @@ export default function CustomerProfilePage() {
       setFormData((prev) => ({
         ...prev,
         [parent]: {
-          ...prev[parent as keyof ProfileFormData],
+          ...(prev[parent as keyof ProfileFormData] as Record<string, string>),
           [child]: value,
         },
       }));
@@ -122,7 +122,7 @@ export default function CustomerProfilePage() {
     setIsEditing(false);
   };
 
-  const currentUser = profileData?.data?.user || user;
+  const currentUser = profileData?.data || user;
 
   if (isLoadingProfile) {
     return (

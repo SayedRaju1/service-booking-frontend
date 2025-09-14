@@ -10,13 +10,11 @@ import {
 } from "@/lib/utils/date-time";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   ChevronLeft,
   ChevronRight,
   Calendar as CalendarIcon,
   Clock,
-  Info,
 } from "lucide-react";
 import { StaffWithAvailability } from "@/types/api";
 
@@ -155,10 +153,10 @@ export function DateSelector({
       const dayOfWeek = getDayOfWeek(dateString);
       // Map the day to match backend format (monday, tuesday, etc.)
       const backendDayOfWeek = dayOfWeek === "sunday" ? "sunday" : dayOfWeek;
-      return availableStaff.some((staff) =>
-        staff.availability?.some(
-          (avail) => avail.dayOfWeek === backendDayOfWeek && avail.isAvailable
-        )
+      return availableStaff.some(
+        (staff) =>
+          staff.availability?.dayOfWeek === backendDayOfWeek &&
+          staff.availability?.isAvailable
       );
     }
 

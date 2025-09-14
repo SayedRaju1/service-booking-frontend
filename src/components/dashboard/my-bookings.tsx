@@ -1,13 +1,10 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Calendar,
   Clock,
-  User,
-  Phone,
-  Mail,
   DollarSign,
   CheckCircle,
   XCircle,
@@ -16,11 +13,10 @@ import {
   Eye,
   Trash2,
   RefreshCw,
-  MapPin,
 } from "lucide-react";
 import { toast } from "sonner";
 import { bookingsApi } from "@/lib/api/bookings";
-import { useAuthStore } from "@/stores/auth";
+import { PopulatedBooking } from "@/types/api";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -56,13 +52,14 @@ interface BookingFilters {
 }
 
 export function MyBookings() {
-  const { user } = useAuthStore();
+  // const { user } = useAuthStore();
   const [filters, setFilters] = useState<BookingFilters>({
     status: "all",
     startDate: "",
     endDate: "",
   });
-  const [selectedBooking, setSelectedBooking] = useState<any>(null);
+  const [selectedBooking, setSelectedBooking] =
+    useState<PopulatedBooking | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
 
@@ -83,7 +80,7 @@ export function MyBookings() {
       setIsCancelModalOpen(false);
       setSelectedBooking(null);
     },
-    onError: (error: any) => {
+    onError: (error: { response?: { data?: { message?: string } } }) => {
       toast.error(error.response?.data?.message || "Failed to cancel booking");
     },
   });
@@ -183,12 +180,12 @@ export function MyBookings() {
 
   // Extract data from queries - use the same dataset for consistency
   const allBookingsFromApi = bookingsData?.data?.bookings || [];
-  const pagination = bookingsData?.data?.pagination;
+  // const pagination = bookingsData?.data?.pagination;
   // Use the same dataset for statistics to ensure consistency
   const allBookings = allBookingsFromApi;
 
   // Apply client-side date filtering since getMyBookings doesn't support date filters
-  const bookings = allBookingsFromApi.filter((booking: any) => {
+  const bookings = allBookingsFromApi.filter((booking: PopulatedBooking) => {
     if (!debouncedFilters.startDate && !debouncedFilters.endDate) {
       return true;
     }
@@ -224,58 +221,60 @@ export function MyBookings() {
   });
 
   // Apply client-side date filtering to statistics as well
-  const filteredAllBookings = allBookings.filter((booking: any) => {
-    if (!debouncedFilters.startDate && !debouncedFilters.endDate) {
-      return true;
-    }
-
-    try {
-      const bookingDate = new Date(booking.appointmentDate);
-      if (isNaN(bookingDate.getTime())) {
-        return false; // Invalid date
+  const filteredAllBookings = allBookings.filter(
+    (booking: PopulatedBooking) => {
+      if (!debouncedFilters.startDate && !debouncedFilters.endDate) {
+        return true;
       }
 
-      // Set time to start of day for start date comparison
-      const startDate = debouncedFilters.startDate
-        ? new Date(debouncedFilters.startDate + "T00:00:00.000Z")
-        : null;
+      try {
+        const bookingDate = new Date(booking.appointmentDate);
+        if (isNaN(bookingDate.getTime())) {
+          return false; // Invalid date
+        }
 
-      // Set time to end of day for end date comparison
-      const endDate = debouncedFilters.endDate
-        ? new Date(debouncedFilters.endDate + "T23:59:59.999Z")
-        : null;
+        // Set time to start of day for start date comparison
+        const startDate = debouncedFilters.startDate
+          ? new Date(debouncedFilters.startDate + "T00:00:00.000Z")
+          : null;
 
-      if (startDate && bookingDate < startDate) {
+        // Set time to end of day for end date comparison
+        const endDate = debouncedFilters.endDate
+          ? new Date(debouncedFilters.endDate + "T23:59:59.999Z")
+          : null;
+
+        if (startDate && bookingDate < startDate) {
+          return false;
+        }
+        if (endDate && bookingDate > endDate) {
+          return false;
+        }
+
+        return true;
+      } catch (error) {
+        console.error("Error filtering booking by date for statistics:", error);
         return false;
       }
-      if (endDate && bookingDate > endDate) {
-        return false;
-      }
-
-      return true;
-    } catch (error) {
-      console.error("Error filtering booking by date for statistics:", error);
-      return false;
     }
-  });
+  );
 
   // Calculate statistics from filtered data
   const totalBookings = filteredAllBookings.length;
   const pendingBookings = filteredAllBookings.filter(
-    (b: any) => b.status === "pending"
+    (b: PopulatedBooking) => b.status === "pending"
   ).length;
   const confirmedBookings = filteredAllBookings.filter(
-    (b: any) => b.status === "confirmed"
+    (b: PopulatedBooking) => b.status === "confirmed"
   ).length;
   const completedBookings = filteredAllBookings.filter(
-    (b: any) => b.status === "completed"
+    (b: PopulatedBooking) => b.status === "completed"
   ).length;
   const cancelledBookings = filteredAllBookings.filter(
-    (b: any) => b.status === "cancelled"
+    (b: PopulatedBooking) => b.status === "cancelled"
   ).length;
 
   // Use the same loading state for statistics
-  const isLoadingStats = isLoading;
+  // const isLoadingStats = isLoading;
 
   const clearFilters = () => {
     setFilters({
@@ -326,8 +325,8 @@ export function MyBookings() {
           Error Loading Bookings
         </h3>
         <p className="text-gray-600 mb-4">
-          {error.response?.data?.message ||
-            "Failed to load bookings. Please try again."}
+          {(error as { response?: { data?: { message?: string } } })?.response
+            ?.data?.message || "Failed to load bookings. Please try again."}
         </p>
         <Button onClick={() => window.location.reload()}>
           <RefreshCw className="h-4 w-4 mr-2" />
@@ -510,7 +509,7 @@ export function MyBookings() {
             </div>
           ) : (
             <div className="space-y-4">
-              {bookings.map((booking: any) => {
+              {bookings.map((booking: PopulatedBooking) => {
                 const { date, time } = formatDateTime(booking.appointmentDate);
 
                 return (
@@ -520,7 +519,7 @@ export function MyBookings() {
                   >
                     <div className="flex items-center gap-4 flex-1 min-w-0">
                       <Avatar className="h-12 w-12">
-                        <AvatarImage src={booking.business?.logo} />
+                        <AvatarImage src="" />
                         <AvatarFallback className="bg-blue-100 text-blue-600">
                           {booking.business?.name?.charAt(0)?.toUpperCase() ||
                             "B"}

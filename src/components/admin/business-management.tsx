@@ -15,7 +15,6 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -35,7 +34,6 @@ import {
   CheckCircle,
   Clock,
   Loader2,
-  AlertCircle,
   ShieldCheck,
   Ban,
   Check,

@@ -284,7 +284,7 @@ export function TimeSlotSelector({
           {filteredTimeSlots.map((slot, index) => {
             const isSelected = selectedTimeSlot?.start === slot.start;
             const startTime = new Date(slot.start);
-            const endTime = new Date(slot.end);
+            // const endTime = new Date(slot.end);
 
             return (
               <Button
@@ -339,7 +339,7 @@ export function TimeSlotSelector({
                     {slots.map((slot, index) => {
                       const isSelected = selectedTimeSlot?.start === slot.start;
                       const startTime = new Date(slot.start);
-                      const endTime = new Date(slot.end);
+                      // const endTime = new Date(slot.end);
 
                       return (
                         <Button

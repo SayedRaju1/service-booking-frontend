@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { StaffWithAvailability } from "@/types/api";
 import { formatTimeTo12Hour } from "@/lib/utils/date-time";
-import { formatDateToYYYYMMDD } from "@/lib/utils/date-time";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,7 +10,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Clock,
   Star,
-  Users,
   Calendar,
   Info,
   CheckCircle,
@@ -62,18 +60,18 @@ export function StaffSelector({
   });
 
   // Get available dates for the next 7 days
-  const getAvailableDates = () => {
-    const dates: string[] = [];
-    const today = new Date();
+  // const getAvailableDates = () => {
+  //   const dates: string[] = [];
+  //   const today = new Date();
 
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
-      dates.push(formatDateToYYYYMMDD(date));
-    }
+  //   for (let i = 0; i < 7; i++) {
+  //     const date = new Date(today);
+  //     date.setDate(today.getDate() + i);
+  //     dates.push(formatDateToYYYYMMDD(date));
+  //   }
 
-    return dates;
-  };
+  //   return dates;
+  // };
 
   const filteredStaff =
     selectedDate && filterByAvailability

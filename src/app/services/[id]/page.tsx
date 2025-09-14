@@ -26,8 +26,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { servicesApi } from "@/lib/api/services";
-import { businessApi } from "@/lib/api/business";
-import { ServiceResponse } from "@/types/api";
 
 export default function ServiceDetailPage() {
   const params = useParams();
@@ -109,11 +107,22 @@ export default function ServiceDetailPage() {
     const errorMessage =
       error instanceof Error
         ? error.message
-        : error?.response?.data?.message ||
-          error?.message ||
+        : (
+            error as {
+              response?: { data?: { message?: string } };
+              message?: string;
+            }
+          )?.response?.data?.message ||
+          (
+            error as {
+              response?: { data?: { message?: string } };
+              message?: string;
+            }
+          )?.message ||
           "Failed to load service details";
 
-    const errorStatus = error?.response?.status;
+    const errorStatus = (error as { response?: { status?: number } })?.response
+      ?.status;
 
     return (
       <div className="min-h-screen bg-gray-50">
@@ -152,7 +161,7 @@ export default function ServiceDetailPage() {
   }
 
   // Check if service data is properly structured (only after successful API call)
-  if (serviceData && (!service || !service._id || !service.name)) {
+  if (serviceData && (!service || !service?._id || !service?.name)) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
@@ -219,26 +228,26 @@ export default function ServiceDetailPage() {
               <div className="flex items-start gap-4 mb-4">
                 <div className="flex-1">
                   <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                    {service.name}
+                    {service?.name}
                   </h1>
                   <Badge variant="secondary" className="mb-3">
-                    {typeof service.category === "string"
-                      ? service.category
-                      : service.category?.name || "Uncategorized"}
+                    {typeof service?.category === "string"
+                      ? service?.category
+                      : service?.category?.name || "Uncategorized"}
                   </Badge>
                 </div>
                 <div className="text-right">
                   <div className="text-3xl font-bold text-blue-600">
-                    {formatPrice(service.price)}
+                    {formatPrice(service?.price || 0)}
                   </div>
                   <div className="text-sm text-gray-600">
-                    {formatDuration(service.duration)}
+                    {formatDuration(service?.duration || 0)}
                   </div>
                 </div>
               </div>
 
               <p className="text-gray-600 mb-6 text-lg">
-                {service.description}
+                {service?.description}
               </p>
 
               {/* Service Details */}
@@ -248,7 +257,7 @@ export default function ServiceDetailPage() {
                   <div>
                     <div className="font-medium">Duration</div>
                     <div className="text-sm">
-                      {formatDuration(service.duration)}
+                      {formatDuration(service?.duration || 0)}
                     </div>
                   </div>
                 </div>
@@ -257,17 +266,19 @@ export default function ServiceDetailPage() {
                   <DollarSign className="h-5 w-5 mr-3 text-gray-400" />
                   <div>
                     <div className="font-medium">Price</div>
-                    <div className="text-sm">{formatPrice(service.price)}</div>
+                    <div className="text-sm">
+                      {formatPrice(service?.price || 0)}
+                    </div>
                   </div>
                 </div>
 
-                {service.rating && (
+                {service?.rating && (
                   <div className="flex items-center text-gray-600">
                     <Star className="h-5 w-5 mr-3 text-gray-400" />
                     <div>
                       <div className="font-medium">Rating</div>
                       <div className="text-sm">
-                        {service.rating.toFixed(1)} out of 5
+                        {service?.rating.toFixed(1)} out of 5
                         {service.reviewCount &&
                           ` (${service.reviewCount} reviews)`}
                       </div>
@@ -280,10 +291,10 @@ export default function ServiceDetailPage() {
             {/* Action Buttons */}
             <div className="flex flex-col gap-3">
               <Link
-                href={`/booking?serviceId=${service._id}&businessId=${
-                  typeof service.business === "string"
-                    ? service.business
-                    : service.business._id || service.business.id
+                href={`/booking?serviceId=${service?._id}&businessId=${
+                  typeof service?.business === "string"
+                    ? service?.business
+                    : service?.business._id || service?.business.id
                 }`}
               >
                 <Button size="lg" className="flex items-center gap-2 w-full">
@@ -464,7 +475,7 @@ export default function ServiceDetailPage() {
                 <div>
                   Business ID:{" "}
                   {typeof service?.business === "string"
-                    ? service.business
+                    ? service?.business
                     : service?.business?._id}
                 </div>
                 <div>

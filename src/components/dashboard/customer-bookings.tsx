@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Calendar,
@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { bookingsApi } from "@/lib/api/bookings";
+import { PopulatedBooking } from "@/types/api";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -45,9 +46,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface BookingFilters {
   status: string | "all";
@@ -61,7 +61,8 @@ export function CustomerBookings() {
     startDate: "",
     endDate: "",
   });
-  const [selectedBooking, setSelectedBooking] = useState<any>(null);
+  const [selectedBooking, setSelectedBooking] =
+    useState<PopulatedBooking | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -87,7 +88,7 @@ export function CustomerBookings() {
       setIsEditModalOpen(false);
       setSelectedBooking(null);
     },
-    onError: (error: any) => {
+    onError: (error: { response?: { data?: { message?: string } } }) => {
       toast.error(
         error.response?.data?.message || "Failed to update booking status"
       );
@@ -109,7 +110,7 @@ export function CustomerBookings() {
       setIsDeleteModalOpen(false);
       setSelectedBooking(null);
     },
-    onError: (error: any) => {
+    onError: (error: { response?: { data?: { message?: string } } }) => {
       toast.error(error.response?.data?.message || "Failed to cancel booking");
     },
   });
@@ -211,7 +212,7 @@ export function CustomerBookings() {
 
   // Extract data from queries - use the same dataset for consistency
   const allBookingsFromApi = bookingsData?.data?.bookings || [];
-  const pagination = bookingsData?.data?.pagination;
+  // const pagination = bookingsData?.data?.pagination;
   // Use the same dataset for statistics to ensure consistency
   const allBookings = allBookingsFromApi;
 
@@ -222,16 +223,16 @@ export function CustomerBookings() {
   // Calculate statistics from filtered data
   const totalBookings = filteredAllBookings.length;
   const pendingBookings = filteredAllBookings.filter(
-    (b: any) => b.status === "pending"
+    (b: PopulatedBooking) => b.status === "pending"
   ).length;
   const confirmedBookings = filteredAllBookings.filter(
-    (b: any) => b.status === "confirmed"
+    (b: PopulatedBooking) => b.status === "confirmed"
   ).length;
   const completedBookings = filteredAllBookings.filter(
-    (b: any) => b.status === "completed"
+    (b: PopulatedBooking) => b.status === "completed"
   ).length;
   const cancelledBookings = filteredAllBookings.filter(
-    (b: any) => b.status === "cancelled"
+    (b: PopulatedBooking) => b.status === "cancelled"
   ).length;
 
   // Use the same loading state for statistics
@@ -283,8 +284,8 @@ export function CustomerBookings() {
           Error Loading Bookings
         </h3>
         <p className="text-gray-600 mb-4">
-          {error.response?.data?.message ||
-            "Failed to load bookings. Please try again."}
+          {(error as { response?: { data?: { message?: string } } })?.response
+            ?.data?.message || "Failed to load bookings. Please try again."}
         </p>
         <Button onClick={() => window.location.reload()}>
           <RefreshCw className="h-4 w-4 mr-2" />
@@ -471,7 +472,7 @@ export function CustomerBookings() {
             </div>
           ) : (
             <div className="space-y-4">
-              {bookings.map((booking: any) => {
+              {bookings.map((booking: PopulatedBooking) => {
                 const { date, time } = formatDateTime(booking.appointmentDate);
                 return (
                   <div
@@ -592,12 +593,12 @@ export function CustomerBookings() {
                     <div className="flex items-center gap-2">
                       <User className="h-4 w-4 text-gray-500" />
                       <span className="font-medium">
-                        {selectedBooking.customer?.name}
+                        {selectedBooking.customer?.name || "Unknown Customer"}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 mt-1 text-sm text-gray-600">
                       <Mail className="h-3 w-3" />
-                      {selectedBooking.customer?.email}
+                      {selectedBooking.customer?.email || "No email"}
                     </div>
                     {selectedBooking.customer?.phone && (
                       <div className="flex items-center gap-2 mt-1 text-sm text-gray-600">
@@ -700,7 +701,6 @@ export function CustomerBookings() {
                   New Status
                 </Label>
                 <Select
-                  id="newStatus"
                   onValueChange={(value) => {
                     if (value === "cancelled") {
                       const reason = prompt(
@@ -749,7 +749,7 @@ export function CustomerBookings() {
             <div className="space-y-4">
               <div className="p-3 bg-red-50 rounded-lg">
                 <div className="font-medium text-red-900">
-                  {selectedBooking.customer?.name} -{" "}
+                  {selectedBooking.customer?.name || "Unknown Customer"} -{" "}
                   {selectedBooking.service?.name}
                 </div>
                 <div className="text-sm text-red-700 mt-1">
@@ -794,7 +794,7 @@ export function CustomerBookings() {
                     "cancellationReason"
                   ) as HTMLInputElement
                 )?.value;
-                handleCancelBooking(selectedBooking._id, reason);
+                handleCancelBooking(selectedBooking?._id || "", reason);
               }}
             >
               Cancel Booking

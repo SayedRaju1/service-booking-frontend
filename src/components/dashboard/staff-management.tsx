@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  Plus,
   Edit,
   Trash2,
   Calendar,
@@ -16,6 +15,7 @@ import { toast } from "sonner";
 import { staffApi } from "@/lib/api/staff";
 import { businessApi } from "@/lib/api/business";
 import { servicesApi } from "@/lib/api/services";
+import { Staff, Service } from "@/types/api";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -51,7 +51,7 @@ interface StaffFormData {
   email: string;
   phone: string;
   position: string;
-  specialization: string;
+  specialties: string[];
   hourlyRate: number;
   bio: string;
   services: string[];
@@ -62,13 +62,13 @@ export function StaffManagement() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAvailabilityModalOpen, setIsAvailabilityModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [selectedStaff, setSelectedStaff] = useState<any>(null);
+  const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
   const [formData, setFormData] = useState<StaffFormData>({
     name: "",
     email: "",
     phone: "",
     position: "",
-    specialization: "",
+    specialties: [],
     hourlyRate: 0,
     bio: "",
     services: [],
@@ -105,7 +105,7 @@ export function StaffManagement() {
       setIsAddModalOpen(false);
       resetForm();
     },
-    onError: (error: any) => {
+    onError: (error: { response?: { data?: { message?: string } } }) => {
       toast.error(
         error.response?.data?.message || "Failed to create staff member"
       );
@@ -124,7 +124,7 @@ export function StaffManagement() {
       setSelectedStaff(null);
       resetForm();
     },
-    onError: (error: any) => {
+    onError: (error: { response?: { data?: { message?: string } } }) => {
       toast.error(
         error.response?.data?.message || "Failed to update staff member"
       );
@@ -141,7 +141,7 @@ export function StaffManagement() {
       setIsDeleteModalOpen(false);
       setSelectedStaff(null);
     },
-    onError: (error: any) => {
+    onError: (error: { response?: { data?: { message?: string } } }) => {
       toast.error(
         error.response?.data?.message || "Failed to delete staff member"
       );
@@ -154,14 +154,17 @@ export function StaffManagement() {
       email: "",
       phone: "",
       position: "",
-      specialization: "",
+      specialties: [],
       hourlyRate: 0,
       bio: "",
       services: [],
     });
   };
 
-  const handleInputChange = (field: keyof StaffFormData, value: any) => {
+  const handleInputChange = (
+    field: keyof StaffFormData,
+    value: string | number | string[]
+  ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -178,27 +181,27 @@ export function StaffManagement() {
     } else {
       createStaffMutation.mutate({
         ...formData,
-        businessId: businessData.data.business._id,
+        business: businessData.data.business._id,
       });
     }
   };
 
-  const handleEdit = (staff: any) => {
+  const handleEdit = (staff: Staff) => {
     setSelectedStaff(staff);
     setFormData({
       name: staff.name || "",
       email: staff.email || "",
       phone: staff.phone || "",
       position: staff.position || "",
-      specialization: staff.specialization || "",
+      specialties: staff.specialties || [],
       hourlyRate: staff.hourlyRate || 0,
       bio: staff.bio || "",
-      services: staff.services?.map((s: any) => s._id) || [],
+      services: [],
     });
     setIsEditModalOpen(true);
   };
 
-  const handleDelete = (staff: any) => {
+  const handleDelete = (staff: Staff) => {
     setSelectedStaff(staff);
     setIsDeleteModalOpen(true);
   };
@@ -210,19 +213,20 @@ export function StaffManagement() {
   };
 
   const staff = staffData?.data?.staff || [];
-  const business = businessData?.data?.business;
+  // const business = businessData?.data?.business;
   const services = servicesData?.data?.services || [];
 
   const totalStaff = staff.length;
   const totalBookings = staff.reduce(
-    (sum: number, s: any) => sum + (s.performance?.totalBookings || 0),
+    (sum: number, s: Staff) => sum + (s.performance?.totalBookings || 0),
     0
   );
   const averageRating =
     staff.length > 0
       ? (
           staff.reduce(
-            (sum: number, s: any) => sum + (s.performance?.averageRating || 0),
+            (sum: number, s: Staff) =>
+              sum + (s.performance?.averageRating || 0),
             0
           ) / staff.length
         ).toFixed(1)
@@ -355,9 +359,12 @@ export function StaffManagement() {
                   </Label>
                   <Input
                     id="specialization"
-                    value={formData.specialization}
+                    value={formData.specialties.join(", ")}
                     onChange={(e) =>
-                      handleInputChange("specialization", e.target.value)
+                      handleInputChange(
+                        "specialties",
+                        e.target.value.split(", ")
+                      )
                     }
                     placeholder="e.g., Hair Coloring, Nail Art"
                     className="h-11"
@@ -420,7 +427,7 @@ export function StaffManagement() {
                     <SelectValue placeholder="Select primary service" />
                   </SelectTrigger>
                   <SelectContent>
-                    {services.map((service: any) => (
+                    {services.map((service: Service) => (
                       <SelectItem key={service._id} value={service._id}>
                         {service.name}
                       </SelectItem>
@@ -539,7 +546,7 @@ export function StaffManagement() {
             </div>
           ) : (
             <div className="divide-y divide-gray-200">
-              {staff.map((member: any) => (
+              {staff.map((member: Staff) => (
                 <div
                   key={member._id}
                   className="flex flex-col sm:flex-row sm:items-center gap-4 p-6 hover:bg-gray-50 transition-colors"
@@ -562,15 +569,16 @@ export function StaffManagement() {
                         {member.position}
                       </p>
                       <div className="flex items-center gap-2 mt-2 flex-wrap">
-                        {member.specialization && (
-                          <Badge
-                            variant="secondary"
-                            className="text-xs whitespace-nowrap px-2 py-1"
-                          >
-                            {member.specialization}
-                          </Badge>
-                        )}
-                        {member.hourlyRate > 0 && (
+                        {member.specialties &&
+                          member.specialties.length > 0 && (
+                            <Badge
+                              variant="secondary"
+                              className="text-xs whitespace-nowrap px-2 py-1"
+                            >
+                              {member.specialties.join(", ")}
+                            </Badge>
+                          )}
+                        {member.hourlyRate && member.hourlyRate > 0 && (
                           <Badge
                             variant="outline"
                             className="text-xs whitespace-nowrap px-2 py-1"
@@ -628,7 +636,7 @@ export function StaffManagement() {
               Edit Staff Member
             </DialogTitle>
             <DialogDescription className="text-base text-gray-600 mt-2">
-              Update the staff member's information below.
+              Update the staff member&apos;s information below.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -708,9 +716,9 @@ export function StaffManagement() {
                 </Label>
                 <Input
                   id="edit-specialization"
-                  value={formData.specialization}
+                  value={formData.specialties.join(", ")}
                   onChange={(e) =>
-                    handleInputChange("specialization", e.target.value)
+                    handleInputChange("specialties", e.target.value.split(", "))
                   }
                   placeholder="e.g., Hair Coloring, Nail Art"
                   className="h-11"
@@ -773,7 +781,7 @@ export function StaffManagement() {
                   <SelectValue placeholder="Select primary service" />
                 </SelectTrigger>
                 <SelectContent>
-                  {services.map((service: any) => (
+                  {services.map((service: Service) => (
                     <SelectItem key={service._id} value={service._id}>
                       {service.name}
                     </SelectItem>

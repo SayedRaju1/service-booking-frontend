@@ -43,7 +43,9 @@ export const servicesApi = {
   },
 
   // Get service by ID
-  getService: async (id: string): Promise<ApiResponse<Service>> => {
+  getService: async (
+    id: string
+  ): Promise<ApiResponse<{ service: Service }>> => {
     const response = await apiClient.get(`/services/${id}`);
     return response.data;
   },
@@ -59,7 +61,7 @@ export const servicesApi = {
   // Create new service
   createService: async (
     data: Partial<Service>
-  ): Promise<ApiResponse<Service>> => {
+  ): Promise<ApiResponse<{ service: Service }>> => {
     const response = await apiClient.post("/services", data);
     return response.data;
   },
@@ -68,7 +70,7 @@ export const servicesApi = {
   updateService: async (
     id: string,
     data: Partial<Service>
-  ): Promise<ApiResponse<Service>> => {
+  ): Promise<ApiResponse<{ service: Service }>> => {
     const response = await apiClient.put(`/services/${id}`, data);
     return response.data;
   },

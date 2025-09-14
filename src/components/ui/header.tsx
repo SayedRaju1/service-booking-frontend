@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { User, LogOut, Settings, Calendar, Building2 } from "lucide-react";
+import { User, LogOut, Settings, Building2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {

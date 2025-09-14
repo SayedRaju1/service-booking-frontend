@@ -197,7 +197,12 @@ export interface Booking {
 // Populated booking interface for getMyBookings endpoint
 export interface PopulatedBooking {
   _id: string;
-  customer: string; // User ID
+  customer: {
+    _id: string;
+    name: string;
+    email: string;
+    phone?: string;
+  };
   business: {
     _id: string;
     name: string;

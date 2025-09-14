@@ -4,6 +4,8 @@ import {
   Staff,
   PaginationMeta,
   BusinessStaffResponse,
+  StaffAvailability,
+  TimeSlot,
 } from "@/types/api";
 
 export const staffApi = {
@@ -75,7 +77,12 @@ export const staffApi = {
     businessId: string,
     serviceId: string,
     appointmentDate: string
-  ): Promise<ApiResponse<any>> => {
+  ): Promise<
+    ApiResponse<{
+      availableStaff: Staff[];
+      service: { _id: string; name: string };
+    }>
+  > => {
     const params = new URLSearchParams({
       businessId,
       serviceId,
@@ -92,7 +99,7 @@ export const staffApi = {
     staffId: string,
     startDate?: string,
     endDate?: string
-  ): Promise<ApiResponse<any>> => {
+  ): Promise<ApiResponse<{ performance: Staff["performance"] }>> => {
     const params = new URLSearchParams();
     if (startDate) params.append("startDate", startDate);
     if (endDate) params.append("endDate", endDate);
@@ -106,7 +113,7 @@ export const staffApi = {
   // Update staff availability
   updateStaffAvailability: async (
     staffId: string,
-    data: any
+    data: Partial<StaffAvailability>
   ): Promise<ApiResponse<Staff>> => {
     const response = await apiClient.put(
       `/staff/${staffId}/availability`,
@@ -119,7 +126,7 @@ export const staffApi = {
   getStaffAvailability: async (
     staffId: string,
     date: string
-  ): Promise<ApiResponse<any>> => {
+  ): Promise<ApiResponse<StaffAvailability>> => {
     const response = await apiClient.get(
       `/staff/${staffId}/availability?date=${date}`
     );
@@ -129,7 +136,7 @@ export const staffApi = {
   // Get all staff availability
   getStaffAllAvailability: async (
     staffId: string
-  ): Promise<ApiResponse<any>> => {
+  ): Promise<ApiResponse<StaffAvailability[]>> => {
     const response = await apiClient.get(`/staff/${staffId}/all-availability`);
     return response.data;
   },
@@ -139,7 +146,13 @@ export const staffApi = {
     staffId: string,
     date: string,
     serviceId: string
-  ): Promise<ApiResponse<any>> => {
+  ): Promise<
+    ApiResponse<{
+      timeSlots: TimeSlot[];
+      staff: Staff;
+      service: { _id: string; name: string };
+    }>
+  > => {
     const params = new URLSearchParams({
       date,
       serviceId,
@@ -156,7 +169,7 @@ export const staffApi = {
     serviceId: string,
     startDate: string,
     endDate: string
-  ): Promise<ApiResponse<any>> => {
+  ): Promise<ApiResponse<{ available: boolean; availableStaff: Staff[] }>> => {
     const params = new URLSearchParams({
       businessId,
       serviceId,
@@ -170,7 +183,9 @@ export const staffApi = {
   },
 
   // Create staff availability
-  createStaffAvailability: async (data: any): Promise<ApiResponse<any>> => {
+  createStaffAvailability: async (
+    data: Omit<StaffAvailability, "_id" | "createdAt" | "updatedAt">
+  ): Promise<ApiResponse<StaffAvailability>> => {
     const response = await apiClient.post("/staff-availability", data);
     return response.data;
   },
@@ -178,8 +193,8 @@ export const staffApi = {
   // Update staff availability
   updateStaffAvailabilityById: async (
     availabilityId: string,
-    data: any
-  ): Promise<ApiResponse<any>> => {
+    data: Partial<StaffAvailability>
+  ): Promise<ApiResponse<StaffAvailability>> => {
     const response = await apiClient.put(
       `/staff-availability/${availabilityId}`,
       data

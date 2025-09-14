@@ -5,11 +5,11 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Toaster } from "sonner";
 import { useMemo } from "react";
 
-interface ProvidersProps {
+interface ClientWrapperProps {
   children: React.ReactNode;
 }
 
-export function Providers({ children }: ProvidersProps) {
+export function ClientWrapper({ children }: ClientWrapperProps) {
   const queryClient = useMemo(
     () =>
       new QueryClient({

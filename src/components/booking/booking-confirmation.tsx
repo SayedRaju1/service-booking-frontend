@@ -32,7 +32,6 @@ interface BookingConfirmationProps {
 export function BookingConfirmation({
   service,
   staff,
-  selectedDate,
   timeSlot,
   onConfirm,
   onEdit,

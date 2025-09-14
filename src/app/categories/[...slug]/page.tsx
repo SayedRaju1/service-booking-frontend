@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { serviceCategoriesApi } from "@/lib/api/service-categories";
-import { servicesApi } from "@/lib/api/services";
 import { ServiceCategory } from "@/types/api";
 
 export default function CategoryDetailPage() {
@@ -32,8 +31,8 @@ export default function CategoryDetailPage() {
           const response = await serviceCategoriesApi.getCategoryById(
             categoryId
           );
-          if (response.data?.category) {
-            breadcrumb.push(response.data.category);
+          if (response.data) {
+            breadcrumb.push(response.data);
           }
         } catch (error) {
           console.error(`Failed to fetch category ${categoryId}:`, error);
@@ -65,7 +64,7 @@ export default function CategoryDetailPage() {
     enabled: !!currentCategoryId,
   });
 
-  const category = categoryData?.data?.category;
+  const category = categoryData?.data;
   const services = categoryServicesData?.data?.services || [];
   const pagination = categoryServicesData?.data?.pagination;
   const breadcrumb = breadcrumbData || [];
@@ -219,30 +218,32 @@ export default function CategoryDetailPage() {
               <CardContent>
                 {category.subcategories && category.subcategories.length > 0 ? (
                   <div className="space-y-2">
-                    {category.subcategories.map((subcategory: any) => (
-                      <Link
-                        key={subcategory._id}
-                        href={`/categories/${slug.join("/")}/${
-                          subcategory._id
-                        }`}
-                        className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors group"
-                      >
-                        <div className="flex items-center space-x-3">
-                          {subcategory.color ? (
-                            <div
-                              className="w-3 h-3 rounded-full"
-                              style={{ backgroundColor: subcategory.color }}
-                            />
-                          ) : (
-                            <FileText className="h-4 w-4 text-gray-500" />
-                          )}
-                          <span className="font-medium text-gray-900">
-                            {subcategory.name}
-                          </span>
-                        </div>
-                        <ChevronRight className="h-4 w-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
-                      </Link>
-                    ))}
+                    {category.subcategories.map(
+                      (subcategory: ServiceCategory) => (
+                        <Link
+                          key={subcategory._id}
+                          href={`/categories/${slug.join("/")}/${
+                            subcategory._id
+                          }`}
+                          className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors group"
+                        >
+                          <div className="flex items-center space-x-3">
+                            {subcategory.color ? (
+                              <div
+                                className="w-3 h-3 rounded-full"
+                                style={{ backgroundColor: subcategory.color }}
+                              />
+                            ) : (
+                              <FileText className="h-4 w-4 text-gray-500" />
+                            )}
+                            <span className="font-medium text-gray-900">
+                              {subcategory.name}
+                            </span>
+                          </div>
+                          <ChevronRight className="h-4 w-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
+                        </Link>
+                      )
+                    )}
                   </div>
                 ) : (
                   <div className="text-center py-8 text-gray-500">

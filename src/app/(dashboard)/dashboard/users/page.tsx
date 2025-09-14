@@ -25,7 +25,7 @@ export default function UsersPage() {
           <CardContent>
             <p className="text-gray-600">
               The User Management section will be implemented in the next phase.
-              You'll be able to view all users, manage roles, and handle
+              You&apos;ll be able to view all users, manage roles, and handle
               user-related administrative tasks here.
             </p>
           </CardContent>

@@ -29,10 +29,10 @@ export function AdminOverview() {
     queryFn: adminApi.getSystemOverview,
   });
 
-  const { data: revenueData, isLoading: isLoadingRevenue } = useQuery({
-    queryKey: ["adminRevenueAnalytics"],
-    queryFn: () => adminApi.getRevenueAnalytics({ period: "monthly" }),
-  });
+  // const { data: revenueData, isLoading: isLoadingRevenue } = useQuery({
+  //   queryKey: ["adminRevenueAnalytics"],
+  //   queryFn: () => adminApi.getRevenueAnalytics({ period: "monthly" }),
+  // });
 
   // Mock recent activity (could be enhanced with real activity logs)
   const recentActivity = [
@@ -219,7 +219,7 @@ export function AdminOverview() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            {isLoadingRevenue ? (
+            {isLoadingOverview ? (
               <Skeleton className="h-8 w-20" />
             ) : (
               <>

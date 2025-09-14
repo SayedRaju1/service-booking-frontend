@@ -18,7 +18,7 @@ export default function BusinessesPage() {
     category: "",
     location: "",
     sortBy: "rating",
-    sortOrder: "desc" as const,
+    sortOrder: "desc" as "asc" | "desc",
   });
 
   // Debounce search query
@@ -40,11 +40,7 @@ export default function BusinessesPage() {
     queryKey: ["businesses", debouncedSearchQuery, filters],
     queryFn: () => {
       if (debouncedSearchQuery.trim()) {
-        return businessApi.searchBusinesses(debouncedSearchQuery.trim(), {
-          page: 1,
-          limit: 20,
-          ...filters,
-        });
+        return businessApi.searchBusinesses(debouncedSearchQuery.trim());
       }
       return businessApi.getBusinesses({
         page: 1,
@@ -94,7 +90,8 @@ export default function BusinessesPage() {
 
   // The API response structure is: { success: true, data: { businesses: [...], pagination: {...} } }
   const businesses = businessesData?.data?.businesses || [];
-  const categories = categoriesData?.data || [];
+  const categories =
+    categoriesData?.data?.categories?.map((cat) => cat.name) || [];
 
   return (
     <div className="min-h-screen bg-gray-50">
