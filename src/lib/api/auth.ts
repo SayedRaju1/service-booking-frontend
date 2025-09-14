@@ -30,14 +30,18 @@ export const authApi = {
   },
 
   // Get current user profile
-  getProfile: async (): Promise<ApiResponse<User>> => {
-    const response = await apiClient.get<ApiResponse<User>>("/auth/profile");
+  getProfile: async (): Promise<ApiResponse<{ user: User }>> => {
+    const response = await apiClient.get<ApiResponse<{ user: User }>>(
+      "/auth/profile"
+    );
     return response.data;
   },
 
   // Update user profile
-  updateProfile: async (data: Partial<User>): Promise<ApiResponse<User>> => {
-    const response = await apiClient.put<ApiResponse<User>>(
+  updateProfile: async (
+    data: Partial<User>
+  ): Promise<ApiResponse<{ user: User }>> => {
+    const response = await apiClient.put<ApiResponse<{ user: User }>>(
       "/auth/profile",
       data
     );
@@ -66,13 +70,13 @@ export const authApi = {
       currency?: string;
       theme?: string;
     };
-  }): Promise<ApiResponse<User>> => {
+  }): Promise<ApiResponse<{ user: User }>> => {
     // Format settings data to be included in profile update
     const profileData = {
       settings: data,
     };
 
-    const response = await apiClient.put<ApiResponse<User>>(
+    const response = await apiClient.put<ApiResponse<{ user: User }>>(
       "/auth/profile",
       profileData
     );

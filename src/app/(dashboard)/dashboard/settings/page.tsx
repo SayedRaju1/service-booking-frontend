@@ -92,8 +92,8 @@ export default function CustomerSettingsPage() {
       preferences: PreferencesSettings;
     }) => authApi.updateSettings(data),
     onSuccess: (response) => {
-      if (response.data) {
-        setUser(response.data);
+      if (response.data?.user) {
+        setUser(response.data.user);
         queryClient.invalidateQueries({ queryKey: ["user-profile"] });
         setIsSaving(false);
         setHasUnsavedChanges(false);
