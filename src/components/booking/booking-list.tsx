@@ -7,9 +7,6 @@ import {
   Calendar,
   Clock,
   MapPin,
-  Phone,
-  Mail,
-  MoreVertical,
   Eye,
   X,
   CheckCircle,
@@ -28,6 +25,7 @@ import {
 } from "@/components/ui/select";
 import { bookingsApi } from "@/lib/api/bookings";
 import { servicesApi } from "@/lib/api/services";
+import { PopulatedBooking } from "@/types/api";
 import { businessApi } from "@/lib/api/business";
 import Link from "next/link";
 
@@ -59,14 +57,14 @@ export function BookingList({
   } = useQuery({
     queryKey: ["user-bookings", statusFilter, dateFilter],
     queryFn: () =>
-      bookingsApi.getUserBookings({
+      bookingsApi.getMyBookings({
         status: statusFilter || undefined,
-        date: dateFilter || undefined,
+        page: 1,
         limit: limit,
       }),
   });
 
-  const bookings = bookingsData?.data || [];
+  const bookings = bookingsData?.data?.bookings || [];
 
   // Cancel booking mutation
   const cancelBookingMutation = useMutation({
@@ -76,42 +74,42 @@ export function BookingList({
     },
   });
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "confirmed":
-        return "bg-green-100 text-green-800";
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "cancelled":
-        return "bg-red-100 text-red-800";
-      case "completed":
-        return "bg-blue-100 text-blue-800";
-      case "no_show":
-        return "bg-gray-100 text-gray-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
+  // const getStatusColor = (status: string) => {
+  //   switch (status) {
+  //     case "confirmed":
+  //       return "bg-green-100 text-green-800";
+  //     case "pending":
+  //       return "bg-yellow-100 text-yellow-800";
+  //     case "cancelled":
+  //       return "bg-red-100 text-red-800";
+  //     case "completed":
+  //       return "bg-blue-100 text-blue-800";
+  //     case "no_show":
+  //       return "bg-gray-100 text-gray-800";
+  //     default:
+  //       return "bg-gray-100 text-gray-800";
+  //   }
+  // };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "confirmed":
-        return <CheckCircle className="h-4 w-4" />;
-      case "pending":
-        return <AlertCircle className="h-4 w-4" />;
-      case "cancelled":
-        return <X className="h-4 w-4" />;
-      default:
-        return <Calendar className="h-4 w-4" />;
-    }
-  };
+  // const getStatusIcon = (status: string) => {
+  //   switch (status) {
+  //     case "confirmed":
+  //       return <CheckCircle className="h-4 w-4" />;
+  //     case "pending":
+  //       return <AlertCircle className="h-4 w-4" />;
+  //     case "cancelled":
+  //       return <X className="h-4 w-4" />;
+  //     default:
+  //       return <Calendar className="h-4 w-4" />;
+  //   }
+  // };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(price);
-  };
+  // const formatPrice = (price: number) => {
+  //   return new Intl.NumberFormat("en-US", {
+  //     style: "currency",
+  //     currency: "USD",
+  //   }).format(price);
+  // };
 
   const handleCancelBooking = (bookingId: string) => {
     if (confirm("Are you sure you want to cancel this booking?")) {
@@ -219,19 +217,19 @@ function BookingCard({
   onCancel,
   isCancelling,
 }: {
-  booking: any;
+  booking: PopulatedBooking;
   onCancel: (id: string) => void;
   isCancelling: boolean;
 }) {
   const { data: serviceData } = useQuery({
     queryKey: ["service", booking.service],
-    queryFn: () => servicesApi.getService(booking.service),
+    queryFn: () => servicesApi.getService(booking.service._id),
     enabled: !!booking.service,
   });
 
   const { data: businessData } = useQuery({
     queryKey: ["business", booking.business],
-    queryFn: () => businessApi.getBusiness(booking.business),
+    queryFn: () => businessApi.getBusiness(booking.business._id),
     enabled: !!booking.business,
   });
 
@@ -315,7 +313,7 @@ function BookingCard({
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <Clock className="h-4 w-4" />
-                  <span>{booking.appointmentTime}</span>
+                  <span>{booking.appointmentDate}</span>
                 </div>
               </div>
 
@@ -323,10 +321,10 @@ function BookingCard({
               {business && (
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <MapPin className="h-4 w-4" />
-                  <span>{business.name}</span>
-                  {business.address && (
+                  <span>{business?.name}</span>
+                  {business?.address && (
                     <span className="text-gray-500">
-                      • {business.address.city}, {business.address.state}
+                      • {business?.address.city}, {business?.address.state}
                     </span>
                   )}
                 </div>
@@ -335,7 +333,7 @@ function BookingCard({
               {/* Price */}
               <div className="flex items-center justify-between">
                 <span className="font-semibold text-blue-600">
-                  {formatPrice(booking.totalAmount)}
+                  {formatPrice(booking.totalPrice)}
                 </span>
                 <div className="flex gap-2">
                   <Link href={`/booking/success?bookingId=${booking._id}`}>

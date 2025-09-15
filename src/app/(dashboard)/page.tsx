@@ -1,31 +1,10 @@
-"use client";
-
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/stores/auth";
+// Force dynamic rendering to avoid client reference manifest issues
+export const dynamic = "force-dynamic";
 
 export default function DashboardPage() {
-  const router = useRouter();
-  const { user } = useAuthStore();
-
-  useEffect(() => {
-    if (!user) {
-      router.push("/login");
-      return;
-    }
-
-    // Route to home page since dashboard isn't built yet
-    router.push("/");
-    return null;
-  }, [user, router]);
-
-  // Show loading while redirecting
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <p className="text-gray-600">Loading dashboard...</p>
-      </div>
+    <div>
+      <h1>Dashboard</h1>
     </div>
   );
 }

@@ -27,8 +27,8 @@ export function MockNotification() {
             Demo Mode Active
           </h4>
           <p className="text-xs text-yellow-700 mt-1">
-            Using mock data for testing. Click "Login for Testing" to simulate
-            authentication.
+            Using mock data for testing. Click &quot;Login for Testing&quot; to
+            simulate authentication.
           </p>
         </div>
         <Button

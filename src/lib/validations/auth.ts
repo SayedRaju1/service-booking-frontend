@@ -41,7 +41,7 @@ export const registerSchema = z
       .refine((val) => !val || /^[\+]?[1-9][\d]{0,15}$/.test(val), {
         message: "Please enter a valid phone number",
       }),
-    role: z.enum(["customer", "service_provider"]).default("customer"),
+    role: z.enum(["customer", "service_provider"]),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",

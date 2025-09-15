@@ -62,7 +62,11 @@ export const staffBookingApi = {
    */
   createStaffBasedBooking: async (
     data: CreateBookingRequest
-  ): Promise<ApiResponse<any>> => {
+  ): Promise<
+    ApiResponse<{
+      booking: { _id: string; status: string; appointmentDate: string };
+    }>
+  > => {
     const response = await apiClient.post("/bookings", data);
     return response.data;
   },
@@ -74,7 +78,15 @@ export const staffBookingApi = {
   getStaffAvailability: async (
     staffId: string,
     date: string
-  ): Promise<ApiResponse<any>> => {
+  ): Promise<
+    ApiResponse<{
+      availability: {
+        startTime: string;
+        endTime: string;
+        isAvailable: boolean;
+      };
+    }>
+  > => {
     const response = await apiClient.get(
       `/staff/${staffId}/availability?date=${date}`
     );
@@ -87,7 +99,16 @@ export const staffBookingApi = {
    */
   getStaffAllAvailability: async (
     staffId: string
-  ): Promise<ApiResponse<any[]>> => {
+  ): Promise<
+    ApiResponse<{
+      availability: {
+        dayOfWeek: string;
+        startTime: string;
+        endTime: string;
+        isAvailable: boolean;
+      }[];
+    }>
+  > => {
     const response = await apiClient.get(`/staff/${staffId}/all-availability`);
     return response.data;
   },

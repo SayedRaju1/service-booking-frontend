@@ -27,7 +27,7 @@ export default function CategoriesPage() {
           <CardContent>
             <p className="text-gray-600">
               The Service Categories section will be implemented in the next
-              phase. You'll be able to create, edit, and manage service
+              phase. You&apos;ll be able to create, edit, and manage service
               categories that businesses can use to organize their services.
             </p>
           </CardContent>

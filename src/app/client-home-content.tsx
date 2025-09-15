@@ -1,4 +1,5 @@
-import { StaticHeader } from "@/components/ui/static-header";
+"use client";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -8,15 +9,13 @@ import {
 } from "@/components/ui/card";
 import { Building2, Calendar, Star, Users, Clock, Shield } from "lucide-react";
 import Link from "next/link";
+import { useAuthStore } from "@/stores/auth";
 
-// Force dynamic rendering to avoid client reference manifest issues
-export const dynamic = "force-dynamic";
+export function ClientHomeContent() {
+  const { user, isAuthenticated } = useAuthStore();
 
-export default function Home() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <StaticHeader />
-
+    <>
       {/* Hero Section */}
       <section className="bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
@@ -31,25 +30,42 @@ export default function Home() {
               in one place.
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6">
-              <Link href="/categories">
-                <Button size="lg" className="text-lg px-8 py-3">
-                  Browse Categories
-                </Button>
-              </Link>
-              <Link href="/businesses">
-                <Button size="lg" className="text-lg px-8 py-3">
-                  Find Services
-                </Button>
-              </Link>
-              <Link href="/register">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="text-lg px-8 py-3"
-                >
-                  Join as Provider
-                </Button>
-              </Link>
+              {isAuthenticated ? (
+                <>
+                  <Link href={user?.role === "admin" ? "/admin" : "/dashboard"}>
+                    <Button size="lg" className="text-lg px-8 py-3">
+                      Go to Dashboard
+                    </Button>
+                  </Link>
+                  <Link href="/businesses">
+                    <Button size="lg" className="text-lg px-8 py-3">
+                      Find Services
+                    </Button>
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link href="/categories">
+                    <Button size="lg" className="text-lg px-8 py-3">
+                      Browse Categories
+                    </Button>
+                  </Link>
+                  <Link href="/businesses">
+                    <Button size="lg" className="text-lg px-8 py-3">
+                      Find Services
+                    </Button>
+                  </Link>
+                  <Link href="/register">
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="text-lg px-8 py-3"
+                    >
+                      Join as Provider
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -158,24 +174,49 @@ export default function Home() {
               platform
             </p>
             <div className="mt-8 flex items-center justify-center gap-x-6">
-              <Link href="/register">
-                <Button
-                  size="lg"
-                  variant="secondary"
-                  className="text-lg px-8 py-3"
-                >
-                  Get Started
-                </Button>
-              </Link>
-              <Link href="/businesses">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="text-lg px-8 py-3 border-white text-white hover:bg-white hover:text-blue-600"
-                >
-                  Browse Services
-                </Button>
-              </Link>
+              {isAuthenticated ? (
+                <>
+                  <Link href={user?.role === "admin" ? "/admin" : "/dashboard"}>
+                    <Button
+                      size="lg"
+                      variant="secondary"
+                      className="text-lg px-8 py-3"
+                    >
+                      Go to Dashboard
+                    </Button>
+                  </Link>
+                  <Link href="/businesses">
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="text-lg px-8 py-3 border-white text-white hover:bg-white hover:text-blue-600"
+                    >
+                      Browse Services
+                    </Button>
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link href="/register">
+                    <Button
+                      size="lg"
+                      variant="secondary"
+                      className="text-lg px-8 py-3"
+                    >
+                      Get Started
+                    </Button>
+                  </Link>
+                  <Link href="/businesses">
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="text-lg px-8 py-3 border-white text-white hover:bg-white hover:text-blue-600"
+                    >
+                      Browse Services
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -210,22 +251,35 @@ export default function Home() {
                     Find Services
                   </Link>
                 </li>
-                <li>
-                  <Link
-                    href="/register"
-                    className="text-gray-300 hover:text-white"
-                  >
-                    Create Account
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/login"
-                    className="text-gray-300 hover:text-white"
-                  >
-                    Sign In
-                  </Link>
-                </li>
+                {isAuthenticated ? (
+                  <li>
+                    <Link
+                      href={user?.role === "admin" ? "/admin" : "/dashboard"}
+                      className="text-gray-300 hover:text-white"
+                    >
+                      Dashboard
+                    </Link>
+                  </li>
+                ) : (
+                  <>
+                    <li>
+                      <Link
+                        href="/register"
+                        className="text-gray-300 hover:text-white"
+                      >
+                        Create Account
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        href="/login"
+                        className="text-gray-300 hover:text-white"
+                      >
+                        Sign In
+                      </Link>
+                    </li>
+                  </>
+                )}
               </ul>
             </div>
 
@@ -234,14 +288,25 @@ export default function Home() {
                 For Providers
               </h3>
               <ul className="mt-4 space-y-4">
-                <li>
-                  <Link
-                    href="/register"
-                    className="text-gray-300 hover:text-white"
-                  >
-                    Join as Provider
-                  </Link>
-                </li>
+                {isAuthenticated && user?.role === "service_provider" ? (
+                  <li>
+                    <Link
+                      href="/dashboard"
+                      className="text-gray-300 hover:text-white"
+                    >
+                      Business Dashboard
+                    </Link>
+                  </li>
+                ) : (
+                  <li>
+                    <Link
+                      href="/register"
+                      className="text-gray-300 hover:text-white"
+                    >
+                      Join as Provider
+                    </Link>
+                  </li>
+                )}
                 <li>
                   <Link
                     href="/businesses"
@@ -301,6 +366,6 @@ export default function Home() {
           </div>
         </div>
       </footer>
-    </div>
+    </>
   );
 }

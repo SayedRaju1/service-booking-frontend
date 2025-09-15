@@ -27,7 +27,7 @@ export default function BusinessesPage() {
           <CardContent>
             <p className="text-gray-600">
               The Business Management section will be implemented in the next
-              phase. You'll be able to approve new business registrations,
+              phase. You&apos;ll be able to approve new business registrations,
               manage existing businesses, and handle business-related
               administrative tasks here.
             </p>

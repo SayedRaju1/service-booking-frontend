@@ -1,11 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import {
   Calendar,
   Clock,
-  MapPin,
   Users,
   DollarSign,
   TrendingUp,
@@ -17,32 +15,30 @@ import Link from "next/link";
 import { Header } from "@/components/ui/header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookingList } from "@/components/booking/booking-list";
-import { bookingsApi } from "@/lib/api/bookings";
 
 export default function BusinessDashboardPage() {
   const [activeTab, setActiveTab] = useState<string>("today");
 
   // Fetch business bookings (this would need to be implemented with proper business ID)
-  const { data: bookingsData } = useQuery({
-    queryKey: ["business-bookings", activeTab],
-    queryFn: () =>
-      bookingsApi.getBusinessBookings("business-id", {
-        status:
-          activeTab === "today"
-            ? "pending,confirmed"
-            : activeTab === "upcoming"
-            ? "confirmed"
-            : activeTab === "completed"
-            ? "completed"
-            : undefined,
-        date:
-          activeTab === "today"
-            ? new Date().toISOString().split("T")[0]
-            : undefined,
-      }),
-    enabled: false, // Disabled for now since we don't have proper business context
-  });
+  // const { data: bookingsData } = useQuery({
+  //   queryKey: ["business-bookings", activeTab],
+  //   queryFn: () =>
+  //     bookingsApi.getBusinessBookings("business-id", {
+  //       status:
+  //         activeTab === "today"
+  //           ? "pending,confirmed"
+  //           : activeTab === "upcoming"
+  //           ? "confirmed"
+  //           : activeTab === "completed"
+  //           ? "completed"
+  //           : undefined,
+  //       date:
+  //         activeTab === "today"
+  //           ? new Date().toISOString().split("T")[0]
+  //           : undefined,
+  //     }),
+  //   enabled: false, // Disabled for now since we don't have proper business context
+  // });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -67,7 +63,7 @@ export default function BusinessDashboardPage() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">
-                    Today's Appointments
+                    Today&apos;s Appointments
                   </p>
                   <p className="text-2xl font-bold text-gray-900">8</p>
                 </div>
@@ -199,7 +195,7 @@ export default function BusinessDashboardPage() {
                   No bookings yet
                 </h3>
                 <p className="text-gray-600 mb-4">
-                  When customers book your services, they'll appear here.
+                  When customers book your services, they&apos;ll appear here.
                 </p>
                 <Link href="/dashboard/business/services">
                   <Button>Add Your First Service</Button>

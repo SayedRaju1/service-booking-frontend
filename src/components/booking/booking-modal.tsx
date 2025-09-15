@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { X } from "lucide-react";
-import { BookingForm } from "./booking-form";
+import { BookingFlow } from "./booking-flow";
 import { Button } from "@/components/ui/button";
 
 interface BookingModalProps {
@@ -18,17 +18,11 @@ export function BookingModal({
   onClose,
   serviceId,
   businessId,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onSuccess,
 }: BookingModalProps) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isBooking, setIsBooking] = useState(false);
-
-  const handleSuccess = (bookingId: string) => {
-    setIsBooking(false);
-    onClose();
-    if (onSuccess) {
-      onSuccess(bookingId);
-    }
-  };
 
   const handleCancel = () => {
     if (!isBooking) {
@@ -54,11 +48,10 @@ export function BookingModal({
         </div>
 
         <div className="p-6">
-          <BookingForm
-            serviceId={serviceId}
+          <BookingFlow
             businessId={businessId}
-            onSuccess={handleSuccess}
-            onCancel={handleCancel}
+            initialServiceId={serviceId}
+            onClose={onClose}
           />
         </div>
       </div>

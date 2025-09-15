@@ -35,8 +35,8 @@ export function Overview({
               {getGreeting()}, {user?.name || "User"}! 👋
             </h1>
             <p className="text-gray-600 mt-1">
-              Welcome to your dashboard. Here's what's happening with your
-              bookings.
+              Welcome to your dashboard. Here&apos;s what&apos;s happening with
+              your bookings.
             </p>
           </div>
           <div className="flex items-center gap-3">

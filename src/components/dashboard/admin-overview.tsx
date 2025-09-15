@@ -74,8 +74,8 @@ export function AdminOverview({
               {getGreeting()}, {user?.name || "Admin"}! 👋
             </h1>
             <p className="text-gray-600 mt-1">
-              Welcome to your admin dashboard. Here's the system overview and
-              management tools.
+              Welcome to your admin dashboard. Here&apos;s the system overview
+              and management tools.
             </p>
             <div className="flex items-center gap-2 mt-2">
               <Shield className="h-4 w-4 text-red-600" />

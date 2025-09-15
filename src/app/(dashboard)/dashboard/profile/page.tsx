@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,8 @@ import {
 import { useAuthStore } from "@/stores/auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { authApi } from "@/lib/api/auth";
+import { toast } from "sonner";
+import { User as UserType } from "@/types/api";
 
 interface ProfileFormData {
   name: string;
@@ -39,6 +41,7 @@ interface ProfileFormData {
 export default function CustomerProfilePage() {
   const { user, setUser } = useAuthStore();
   const [isEditing, setIsEditing] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
   const [formData, setFormData] = useState<ProfileFormData>({
     name: user?.name || "",
     email: user?.email || "",
@@ -54,6 +57,25 @@ export default function CustomerProfilePage() {
 
   const queryClient = useQueryClient();
 
+  // Online/offline detection
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    // Set initial state
+    setIsOnline(navigator.onLine);
+
+    // Add event listeners
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
   // Fetch user profile data
   const {
     data: profileData,
@@ -65,18 +87,115 @@ export default function CustomerProfilePage() {
     enabled: !!user?._id,
   });
 
+  // Handle profile loading errors
+  useEffect(() => {
+    if (profileError) {
+      console.error("Error fetching profile:", profileError);
+      const errorMessage =
+        profileError &&
+        typeof profileError === "object" &&
+        "response" in profileError
+          ? (profileError as { response?: { data?: { message?: string } } })
+              .response?.data?.message
+          : undefined;
+      toast.error(
+        errorMessage || "Failed to load profile data. Please refresh the page."
+      );
+    }
+  }, [profileError]);
+
+  // Update form data when profile data is loaded
+  useEffect(() => {
+    if (profileData?.data?.user) {
+      const userData = profileData.data.user;
+      setFormData({
+        name: userData.name || "",
+        email: userData.email || "",
+        phone: userData.phone || "",
+        address: {
+          street: userData.address?.street || "",
+          city: userData.address?.city || "",
+          state: userData.address?.state || "",
+          zipCode: userData.address?.zipCode || "",
+          country: userData.address?.country || "",
+        },
+      });
+    }
+  }, [profileData]);
+
+  // Timeout wrapper for mutations
+  const createTimeoutPromise = (ms: number) => {
+    return new Promise((_, reject) => {
+      setTimeout(() => reject(new Error("Request timeout")), ms);
+    });
+  };
+
+  // Enhanced mutation function with timeout
+  const updateProfileWithTimeout = async (
+    data: Partial<ProfileFormData>
+  ): Promise<{ data?: { user?: UserType } }> => {
+    const timeoutMs = 8000; // 8 seconds timeout for mutations
+
+    return Promise.race([
+      authApi.updateProfile(data),
+      createTimeoutPromise(timeoutMs),
+    ]) as Promise<{ data?: { user?: UserType } }>;
+  };
+
   // Update profile mutation
   const updateProfileMutation = useMutation({
-    mutationFn: (data: Partial<ProfileFormData>) => authApi.updateProfile(data),
-    onSuccess: (response) => {
+    mutationFn: updateProfileWithTimeout,
+    retry: (failureCount, error): boolean => {
+      // Only retry once for network errors, not for timeout or validation errors
+      if (failureCount < 1) {
+        const isNetworkError =
+          error &&
+          typeof error === "object" &&
+          "code" in error &&
+          (error.code === "ERR_NETWORK" || error.code === "ECONNREFUSED");
+        return Boolean(isNetworkError);
+      }
+      return false;
+    },
+    onSuccess: (response: { data?: { user?: UserType } }) => {
       if (response.data?.user) {
         setUser(response.data.user);
         queryClient.invalidateQueries({ queryKey: ["user-profile"] });
         setIsEditing(false);
+        toast.success("Profile updated successfully!");
       }
     },
-    onError: (error) => {
+    onError: (error: unknown) => {
       console.error("Error updating profile:", error);
+
+      let errorMessage = "Failed to update profile. Please try again.";
+
+      if (error && typeof error === "object") {
+        // Handle timeout errors
+        if ("message" in error && error.message === "Request timeout") {
+          errorMessage =
+            "Request timed out. Please check your connection and try again.";
+        }
+        // Handle network errors
+        else if ("code" in error) {
+          const code = (error as { code: string }).code;
+          if (code === "ERR_NETWORK" || code === "ECONNREFUSED") {
+            errorMessage =
+              "Unable to connect to the server. Please check your internet connection.";
+          } else if (code === "ECONNABORTED") {
+            errorMessage = "Request timed out. Please try again.";
+          }
+        }
+        // Handle API response errors
+        else if ("response" in error) {
+          const responseError = error as {
+            response?: { data?: { message?: string } };
+          };
+          errorMessage = responseError.response?.data?.message || errorMessage;
+        }
+      }
+
+      toast.error(errorMessage);
     },
   });
 
@@ -86,7 +205,7 @@ export default function CustomerProfilePage() {
       setFormData((prev) => ({
         ...prev,
         [parent]: {
-          ...prev[parent as keyof ProfileFormData],
+          ...(prev[parent as keyof ProfileFormData] as Record<string, string>),
           [child]: value,
         },
       }));
@@ -99,27 +218,38 @@ export default function CustomerProfilePage() {
   };
 
   const handleSave = async () => {
+    // Check if user is offline
+    if (!isOnline) {
+      toast.error(
+        "You are currently offline. Please check your internet connection and try again."
+      );
+      return;
+    }
+
     try {
       await updateProfileMutation.mutateAsync(formData);
     } catch (error) {
       console.error("Error saving profile:", error);
+      // Error handling is already done in the mutation onError callback
     }
   };
 
   const handleCancel = () => {
+    const userData = currentUser || user;
     setFormData({
-      name: user?.name || "",
-      email: user?.email || "",
-      phone: user?.phone || "",
+      name: userData?.name || "",
+      email: userData?.email || "",
+      phone: userData?.phone || "",
       address: {
-        street: user?.address?.street || "",
-        city: user?.address?.city || "",
-        state: user?.address?.state || "",
-        zipCode: user?.address?.zipCode || "",
-        country: user?.address?.country || "",
+        street: userData?.address?.street || "",
+        city: userData?.address?.city || "",
+        state: userData?.address?.state || "",
+        zipCode: userData?.address?.zipCode || "",
+        country: userData?.address?.country || "",
       },
     });
     setIsEditing(false);
+    toast.info("Profile editing cancelled. No changes were saved.");
   };
 
   const currentUser = profileData?.data?.user || user;
@@ -165,9 +295,15 @@ export default function CustomerProfilePage() {
             <p className="text-gray-600 mt-1">
               Manage your personal information and account settings
             </p>
+            {!isOnline && (
+              <div className="mt-2 flex items-center gap-2 text-sm text-amber-600">
+                <div className="h-2 w-2 rounded-full bg-amber-500"></div>
+                You are currently offline
+              </div>
+            )}
           </div>
           {!isEditing && (
-            <Button onClick={() => setIsEditing(true)}>
+            <Button onClick={() => setIsEditing(true)} disabled={!isOnline}>
               <Edit className="h-4 w-4 mr-2" />
               Edit Profile
             </Button>
@@ -193,7 +329,13 @@ export default function CustomerProfilePage() {
                 </h2>
                 <p className="text-gray-600">{currentUser?.email}</p>
                 <div className="flex items-center gap-2 mt-2">
-                  <Badge variant="secondary">Customer</Badge>
+                  <Badge variant="secondary">
+                    {currentUser?.role === "service_provider"
+                      ? "Service Provider"
+                      : currentUser?.role === "admin"
+                      ? "Admin"
+                      : "Customer"}
+                  </Badge>
                   {currentUser?.isVerified && (
                     <Badge variant="default">Verified</Badge>
                   )}
@@ -355,7 +497,7 @@ export default function CustomerProfilePage() {
               <div className="flex gap-3 pt-4 border-t">
                 <Button
                   onClick={handleSave}
-                  disabled={updateProfileMutation.isPending}
+                  disabled={updateProfileMutation.isPending || !isOnline}
                   className="flex-1"
                 >
                   {updateProfileMutation.isPending ? (

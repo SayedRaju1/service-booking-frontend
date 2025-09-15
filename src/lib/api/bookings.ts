@@ -4,7 +4,6 @@ import {
   Booking,
   PopulatedBooking,
   PaginationMeta,
-  CreateBookingRequest as NewCreateBookingRequest,
   BookingCreationResponse,
 } from "@/types/api";
 

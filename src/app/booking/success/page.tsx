@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Header } from "@/components/ui/header";
@@ -7,7 +8,7 @@ import { BookingSuccess } from "@/components/booking/booking-success";
 import { bookingsApi } from "@/lib/api/bookings";
 import { Loader2, AlertCircle } from "lucide-react";
 
-export default function BookingSuccessPage() {
+function BookingSuccessContent() {
   const searchParams = useSearchParams();
   const bookingId = searchParams.get("bookingId");
   const error = searchParams.get("error");
@@ -149,5 +150,30 @@ export default function BookingSuccessPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function BookingSuccessPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50">
+          <Header />
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="max-w-2xl mx-auto text-center">
+              <Loader2 className="h-12 w-12 text-blue-600 animate-spin mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                Loading...
+              </h2>
+              <p className="text-gray-600">
+                Please wait while we load the page.
+              </p>
+            </div>
+          </div>
+        </div>
+      }
+    >
+      <BookingSuccessContent />
+    </Suspense>
   );
 }

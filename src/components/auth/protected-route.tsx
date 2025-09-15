@@ -28,7 +28,7 @@ export function ProtectedRoute({
       if (requiredRole && user && user.role !== requiredRole) {
         // Redirect to home page since dashboard isn't built yet
         router.push("/");
-        return null;
+        return;
       }
     }
   }, [isAuthenticated, user, isLoading, requiredRole, router, redirectTo]);

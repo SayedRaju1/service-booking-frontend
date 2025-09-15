@@ -20,6 +20,7 @@ export default function ServicesPage() {
     sortOrder: "asc" as const,
     minPrice: 0,
     maxPrice: 1000,
+    showFilters: false,
   });
 
   // Debounce search query
@@ -41,7 +42,7 @@ export default function ServicesPage() {
     queryKey: ["services", debouncedSearchQuery, filters],
     queryFn: () => {
       // Prepare API parameters, excluding "all" values
-      const apiParams = {
+      let apiParams = {
         page: 1,
         limit: 20,
         ...filters,
@@ -49,19 +50,20 @@ export default function ServicesPage() {
 
       // Remove "all" category to avoid backend casting errors
       if (apiParams.category === "all") {
-        delete apiParams.category;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { category, ...rest } = apiParams;
+        apiParams = rest as typeof apiParams;
       }
 
       // Remove empty businessId
       if (!apiParams.businessId) {
-        delete apiParams.businessId;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { businessId, ...rest } = apiParams;
+        apiParams = rest as typeof apiParams;
       }
 
       if (debouncedSearchQuery.trim()) {
-        return servicesApi.searchServices(
-          debouncedSearchQuery.trim(),
-          apiParams
-        );
+        return servicesApi.searchServices(debouncedSearchQuery.trim());
       }
       return servicesApi.getServices(apiParams);
     },
@@ -87,12 +89,14 @@ export default function ServicesPage() {
       sortOrder: "asc",
       minPrice: 0,
       maxPrice: 1000,
+      showFilters: false,
     });
   }, []);
 
   // The API response structure is: { success: true, data: { services: [...], pagination: {...} } }
   const services = servicesData?.data?.services || [];
-  const categories = categoriesData?.data || [];
+  const categories =
+    categoriesData?.data?.categories?.map((cat) => cat.name) || [];
 
   return (
     <div className="min-h-screen bg-gray-50">

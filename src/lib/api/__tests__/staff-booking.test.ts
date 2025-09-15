@@ -6,6 +6,7 @@
 import { staffBookingApi } from "../staff-booking";
 import { staffApi } from "../staff";
 import { bookingsApi } from "../bookings";
+import apiClient from "../client";
 
 // Mock the API client
 jest.mock("../client", () => ({
@@ -37,7 +38,6 @@ describe("Staff Booking API", () => {
         },
       };
 
-      const { default: apiClient } = require("../client");
       apiClient.get.mockResolvedValue(mockResponse);
 
       const result = await staffBookingApi.getAvailableStaffForService(
@@ -68,7 +68,6 @@ describe("Staff Booking API", () => {
         },
       };
 
-      const { default: apiClient } = require("../client");
       apiClient.get.mockResolvedValue(mockResponse);
 
       const result = await staffBookingApi.getStaffTimeSlots(
@@ -93,7 +92,6 @@ describe("Staff Booking API", () => {
         },
       };
 
-      const { default: apiClient } = require("../client");
       apiClient.post.mockResolvedValue(mockResponse);
 
       const bookingData = {
@@ -133,7 +131,6 @@ describe("Staff API", () => {
         },
       };
 
-      const { default: apiClient } = require("../client");
       apiClient.get.mockResolvedValue(mockResponse);
 
       const result = await staffApi.getStaffAvailability(
@@ -163,7 +160,6 @@ describe("Bookings API", () => {
         },
       };
 
-      const { default: apiClient } = require("../client");
       apiClient.post.mockResolvedValue(mockResponse);
 
       const bookingData = {

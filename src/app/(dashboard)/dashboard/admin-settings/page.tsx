@@ -25,7 +25,7 @@ export default function AdminSettingsPage() {
           <CardContent>
             <p className="text-gray-600">
               The Admin Settings section will be implemented in the next phase.
-              You'll be able to configure system settings, manage security
+              You&apos;ll be able to configure system settings, manage security
               policies, set up notification preferences, and handle other
               administrative configurations.
             </p>

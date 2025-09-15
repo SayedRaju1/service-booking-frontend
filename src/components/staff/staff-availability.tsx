@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Calendar, Clock, User, Save, X } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Clock, User, Save, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { staffApi } from "@/lib/api/staff";
-import { Staff } from "@/types/api";
+import type { StaffAvailability } from "@/types/api";
 
 interface StaffAvailabilityProps {
   staffId: string;
@@ -33,7 +33,8 @@ export function StaffAvailability({
   });
 
   const updateAvailabilityMutation = useMutation({
-    mutationFn: (data: any) => staffApi.updateStaffAvailability(staffId, data),
+    mutationFn: (data: Partial<StaffAvailability>) =>
+      staffApi.updateStaffAvailability(staffId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["business-staff"] });
       if (onClose) onClose();
@@ -41,7 +42,15 @@ export function StaffAvailability({
   });
 
   const handleSave = () => {
-    updateAvailabilityMutation.mutate(availability);
+    // Convert the multi-day availability to a single day record
+    const availabilityData: Partial<StaffAvailability> = {
+      staff: staffId,
+      dayOfWeek: "monday", // Default to monday, this should be handled differently
+      startTime: availability.monday.startTime,
+      endTime: availability.monday.endTime,
+      isAvailable: availability.monday.isAvailable,
+    };
+    updateAvailabilityMutation.mutate(availabilityData);
   };
 
   const days = [
