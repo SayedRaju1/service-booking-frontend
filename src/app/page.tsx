@@ -1,4 +1,4 @@
-import { StaticHeader } from "@/components/ui/static-header";
+import { Header } from "@/components/ui/header";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50">
-      <StaticHeader />
+      <Header />
 
       {/* Hero Section */}
       <section className="bg-white">
