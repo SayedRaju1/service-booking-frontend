@@ -212,14 +212,14 @@ export default function ServiceDetailPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
-        <div className="mb-6">
+        {/* <div className="mb-6">
           <Link href="/services">
             <Button variant="ghost" className="flex items-center gap-2">
               <ArrowLeft className="h-4 w-4" />
               Back to Services
             </Button>
           </Link>
-        </div>
+        </div> */}
 
         {/* Service Header */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-8">

@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { ArrowLeft, Folder, FileText, ChevronRight, Home } from "lucide-react";
+import { ArrowLeft, Folder, FileText, ChevronRight } from "lucide-react";
 
 import { Header } from "@/components/ui/header";
 import { Button } from "@/components/ui/button";
@@ -130,7 +130,7 @@ export default function CategoryDetailPage() {
     <div className="min-h-screen bg-gray-50">
       <Header />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* Breadcrumb Navigation */}
         {/* <div className="mb-6">
           <nav className="flex items-center space-x-2 text-sm text-gray-600">
@@ -161,7 +161,7 @@ export default function CategoryDetailPage() {
         </div> */}
 
         {/* Back Button */}
-        <div className="mb-6">
+        <div className="mb-4 sm:mb-6">
           <Link
             href={
               breadcrumb.length > 1
@@ -169,7 +169,10 @@ export default function CategoryDetailPage() {
                 : "/categories"
             }
           >
-            <Button variant="ghost" className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              className="flex items-center gap-2 text-sm sm:text-base"
+            >
               <ArrowLeft className="h-4 w-4" />
               Back to{" "}
               {breadcrumb.length > 1
@@ -180,8 +183,10 @@ export default function CategoryDetailPage() {
         </div>
 
         {/* Category Header */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">{category.name}</h1>
+        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+            {category.name}
+          </h1>
         </div>
 
         <div
@@ -257,65 +262,102 @@ export default function CategoryDetailPage() {
                     <span className="text-gray-600">Loading services...</span>
                   </div>
                 ) : services.length > 0 ? (
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     {services.map((service) => (
                       <div
                         key={service._id}
-                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                        className="bg-white border rounded-xl p-4 hover:shadow-md transition-all duration-200"
                       >
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <h3 className="font-semibold text-gray-900">
+                        {/* Header with title and price */}
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-gray-900 text-base leading-tight">
                               {service.name}
                             </h3>
-                            <Badge variant="secondary" className="text-xs">
+                          </div>
+                          <div className="flex items-center gap-2 ml-3 flex-shrink-0">
+                            <Badge
+                              variant="secondary"
+                              className="text-xs font-medium bg-gray-100 text-gray-700 px-2 py-1"
+                            >
                               {service.priceFormatted || `$${service.price}`}
                             </Badge>
                             {service.isFeatured && (
                               <Badge
                                 variant="default"
-                                className="text-xs bg-yellow-100 text-yellow-800"
+                                className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 font-medium"
                               >
                                 Featured
                               </Badge>
                             )}
                           </div>
-                          <p className="text-sm text-gray-600 line-clamp-2">
-                            {service.description}
-                          </p>
-                          <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                        </div>
+
+                        {/* Description */}
+                        <p className="text-sm text-gray-600 mb-3 line-clamp-2 leading-relaxed">
+                          {service.description}
+                        </p>
+
+                        {/* Service details - stacked on mobile */}
+                        <div className="space-y-2 mb-3">
+                          <div className="flex items-center gap-2 text-xs text-gray-500">
+                            <span className="font-medium">Duration:</span>
                             <span>
                               {service.durationFormatted ||
                                 `${service.duration} min`}
                             </span>
-                            {service.business &&
-                              typeof service.business === "object" && (
-                                <span>{service.business.name}</span>
-                              )}
-                            {service.category &&
-                              typeof service.category === "object" && (
-                                <span className="text-blue-600">
+                          </div>
+
+                          {service.business &&
+                            typeof service.business === "object" && (
+                              <div className="flex items-center gap-2 text-xs text-gray-500">
+                                <span className="font-medium">Clinic:</span>
+                                <span className="text-blue-600 font-medium">
+                                  {service.business.name}
+                                </span>
+                              </div>
+                            )}
+
+                          {service.category &&
+                            typeof service.category === "object" && (
+                              <div className="flex items-center gap-2 text-xs text-gray-500">
+                                <span className="font-medium">Type:</span>
+                                <span className="text-blue-600 font-medium">
                                   {service.category.name}
                                 </span>
-                              )}
-                          </div>
-                          {service.requirements &&
-                            service.requirements.length > 0 && (
-                              <div className="mt-2 text-xs text-gray-500">
-                                <span className="font-medium">
-                                  Requirements:
-                                </span>{" "}
-                                {service.requirements[0]}
-                                {service.requirements.length > 1 &&
-                                  ` +${service.requirements.length - 1} more`}
                               </div>
                             )}
                         </div>
-                        <Link href={`/services/${service._id}`}>
-                          <Button size="sm" variant="outline">
-                            View Details
-                          </Button>
-                        </Link>
+
+                        {/* Requirements and button */}
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                          {service.requirements &&
+                            service.requirements.length > 0 && (
+                              <div className="text-xs text-gray-500 flex-1">
+                                <span className="font-medium">
+                                  Requirements:
+                                </span>{" "}
+                                <span className="leading-relaxed">
+                                  {service.requirements[0]}
+                                  {service.requirements.length > 1 &&
+                                    ` +${service.requirements.length - 1} more`}
+                                </span>
+                              </div>
+                            )}
+
+                          <Link
+                            href={`/services/${service._id}`}
+                            className="flex-shrink-0"
+                          >
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="w-full sm:w-auto text-xs font-medium"
+                            >
+                              View Details
+                            </Button>
+                          </Link>
+                        </div>
                       </div>
                     ))}
                   </div>

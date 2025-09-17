@@ -3,16 +3,13 @@
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import {
-  Star,
   MapPin,
   Clock,
   Phone,
   Mail,
   Globe,
   Calendar,
-  Users,
   Award,
-  ArrowLeft,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -121,49 +118,17 @@ export default function BusinessDetailPage() {
       <Header />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Back Button */}
-        <div className="mb-6">
-          <Link href="/businesses">
-            <Button variant="ghost" className="flex items-center gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              Back to Businesses
-            </Button>
-          </Link>
-        </div>
-
         {/* Business Header */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
             <div className="flex-1">
-              <div className="flex items-start gap-4 mb-4">
-                <div className="flex-1">
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                    {business.name}
-                  </h1>
-                  <Badge className={`${getCategoryColor(business.category)}`}>
-                    {business.category}
-                  </Badge>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-5 w-5 ${
-                          i < Math.floor(business.rating || 0)
-                            ? "text-yellow-400 fill-current"
-                            : "text-gray-300"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <span className="text-lg font-semibold text-gray-900">
-                    {business.rating?.toFixed(1) || "0.0"}
-                  </span>
-                  <span className="text-gray-600">
-                    ({business.totalReviews || 0} reviews)
-                  </span>
-                </div>
+              <div className="mb-4">
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                  {business.name}
+                </h1>
+                <Badge className={`${getCategoryColor(business.category)}`}>
+                  {business.category}
+                </Badge>
               </div>
 
               <p className="text-gray-600 mb-6">{business.description}</p>
@@ -235,10 +200,6 @@ export default function BusinessDetailPage() {
 
             {/* Action Buttons */}
             <div className="flex flex-col gap-3">
-              <Button size="lg" className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                Book Appointment
-              </Button>
               <Button
                 variant="outline"
                 size="lg"
@@ -323,13 +284,13 @@ export default function BusinessDetailPage() {
                           View Details
                         </Link>
                       </Button>
-                      <Button
+                      {/* <Button
                         size="sm"
                         variant="outline"
                         onClick={() => handleBookNow(service._id)}
                       >
                         Book Now
-                      </Button>
+                      </Button> */}
                     </div>
                   </CardContent>
                 </Card>
@@ -348,7 +309,7 @@ export default function BusinessDetailPage() {
         </div>
 
         {/* Business Info */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 gap-8">
           {/* About */}
           <Card>
             <CardHeader>
@@ -359,44 +320,6 @@ export default function BusinessDetailPage() {
             </CardHeader>
             <CardContent>
               <p className="text-gray-600 mb-4">{business.description}</p>
-            </CardContent>
-          </Card>
-
-          {/* Reviews Preview */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                Customer Reviews
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-4 mb-4">
-                <div className="flex items-center">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`h-5 w-5 ${
-                        i < Math.floor(business.rating || 0)
-                          ? "text-yellow-400 fill-current"
-                          : "text-gray-300"
-                      }`}
-                    />
-                  ))}
-                </div>
-                <div>
-                  <div className="font-semibold text-gray-900">
-                    {business.rating?.toFixed(1) || "0.0"} out of 5
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    Based on {business.totalReviews || 0} reviews
-                  </div>
-                </div>
-              </div>
-
-              <Button variant="outline" className="w-full">
-                View All Reviews
-              </Button>
             </CardContent>
           </Card>
         </div>
