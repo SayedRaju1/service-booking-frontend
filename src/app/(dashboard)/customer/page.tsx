@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Calendar, Clock, MapPin, User, Plus, Search } from "lucide-react";
 import Link from "next/link";
 
-import { Header } from "@/components/ui/header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookingList } from "@/components/booking/booking-list";
@@ -14,8 +13,6 @@ export default function CustomerDashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Dashboard Header */}
         <div className="mb-8">

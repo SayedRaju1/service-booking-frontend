@@ -4,7 +4,6 @@ import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
-import { Header } from "@/components/ui/header";
 import { Button } from "@/components/ui/button";
 import { BookingFlow } from "@/components/booking/booking-flow";
 
@@ -16,7 +15,6 @@ function BookingPageContent() {
   if (!serviceId || !businessId) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Header />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center py-12">
             <div className="text-red-600 mb-4">
@@ -34,8 +32,6 @@ function BookingPageContent() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Booking Flow */}
         <BookingFlow initialServiceId={serviceId} businessId={businessId} />
@@ -49,7 +45,6 @@ export default function BookingPage() {
     <Suspense
       fallback={
         <div className="min-h-screen bg-gray-50">
-          <Header />
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="max-w-2xl mx-auto text-center">
               <h2 className="text-2xl font-bold text-gray-900 mb-2">

@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { ArrowRight, Folder } from "lucide-react";
 
-import { Header } from "@/components/ui/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { serviceCategoriesApi } from "@/lib/api/service-categories";
 import { ServiceCategory } from "@/types/api";
@@ -23,7 +22,6 @@ export default function CategoriesPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Header />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
@@ -36,8 +34,6 @@ export default function CategoriesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Header */}
         <div className="text-center mb-12">
