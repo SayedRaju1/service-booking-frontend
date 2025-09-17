@@ -64,7 +64,8 @@ export default function CategoryDetailPage() {
     enabled: !!currentCategoryId,
   });
 
-  const category = categoryData?.data;
+  // Get category from the services response since it includes the category data
+  const category = categoryServicesData?.data?.category || categoryData?.data;
   const services = categoryServicesData?.data?.services || [];
   const pagination = categoryServicesData?.data?.pagination;
   const breadcrumb = breadcrumbData || [];
@@ -131,7 +132,7 @@ export default function CategoryDetailPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumb Navigation */}
-        <div className="mb-6">
+        {/* <div className="mb-6">
           <nav className="flex items-center space-x-2 text-sm text-gray-600">
             <Link href="/" className="flex items-center hover:text-blue-600">
               <Home className="h-4 w-4" />
@@ -142,8 +143,9 @@ export default function CategoryDetailPage() {
             </Link>
             {breadcrumb.map((cat, index) => (
               <div key={cat._id} className="flex items-center">
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight key={`chevron-${cat._id}`} className="h-4 w-4" />
                 <Link
+                  key={`link-${cat._id}`}
                   href={buildBreadcrumbPath(index)}
                   className={`ml-2 hover:text-blue-600 ${
                     index === breadcrumb.length - 1
@@ -156,7 +158,7 @@ export default function CategoryDetailPage() {
               </div>
             ))}
           </nav>
-        </div>
+        </div> */}
 
         {/* Back Button */}
         <div className="mb-6">
@@ -179,44 +181,27 @@ export default function CategoryDetailPage() {
 
         {/* Category Header */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <div className="flex items-start gap-4">
-            <div className="flex items-center space-x-3">
-              {category.color ? (
-                <div
-                  className="w-6 h-6 rounded-full"
-                  style={{ backgroundColor: category.color }}
-                />
-              ) : (
-                <Folder className="h-8 w-8 text-blue-500" />
-              )}
-            </div>
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                {category.name}
-              </h1>
-              <p className="text-lg text-gray-600 mb-4">
-                {category.description}
-              </p>
-              <div className="flex items-center gap-4 text-sm text-gray-500">
-                <span>{category.subcategories?.length || 0} subcategories</span>
-                <span>{pagination?.total || services.length} services</span>
-              </div>
-            </div>
-          </div>
+          <h1 className="text-3xl font-bold text-gray-900">{category.name}</h1>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Subcategories Section */}
-          <div className="lg:col-span-1">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Folder className="h-5 w-5" />
-                  Subcategories
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {category.subcategories && category.subcategories.length > 0 ? (
+        <div
+          className={`grid grid-cols-1 ${
+            category.subcategories && category.subcategories.length > 0
+              ? "lg:grid-cols-3"
+              : "lg:grid-cols-1"
+          } gap-8`}
+        >
+          {/* Subcategories Section - Only show if there are subcategories */}
+          {category.subcategories && category.subcategories.length > 0 && (
+            <div className="lg:col-span-1">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Folder className="h-5 w-5" />
+                    Subcategories
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
                   <div className="space-y-2">
                     {category.subcategories.map(
                       (subcategory: ServiceCategory) => (
@@ -245,18 +230,19 @@ export default function CategoryDetailPage() {
                       )
                     )}
                   </div>
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <FileText className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                    <p className="text-sm">No subcategories available</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
           {/* Services Section */}
-          <div className="lg:col-span-2">
+          <div
+            className={
+              category.subcategories && category.subcategories.length > 0
+                ? "lg:col-span-2"
+                : "lg:col-span-1"
+            }
+          >
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">

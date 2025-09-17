@@ -32,22 +32,13 @@ export default function Home() {
             </p>
             <div className="mt-10 flex items-center justify-center gap-x-6">
               <Link href="/categories">
-                <Button size="lg" className="text-lg px-8 py-3">
+                <Button size="lg" className="text-md sm:text-lg px-8 py-3">
                   Browse Categories
                 </Button>
               </Link>
               <Link href="/businesses">
-                <Button size="lg" className="text-lg px-8 py-3">
+                <Button size="lg" className="text-md sm:text-lg px-8 py-3">
                   Find Services
-                </Button>
-              </Link>
-              <Link href="/register">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="text-lg px-8 py-3"
-                >
-                  Join as Provider
                 </Button>
               </Link>
             </div>
@@ -170,8 +161,8 @@ export default function Home() {
               <Link href="/businesses">
                 <Button
                   size="lg"
-                  variant="outline"
-                  className="text-lg px-8 py-3 border-white text-white hover:bg-white hover:text-blue-600"
+                  variant="secondary"
+                  className="text-lg px-8 py-3"
                 >
                   Browse Services
                 </Button>
@@ -296,7 +287,8 @@ export default function Home() {
 
           <div className="mt-8 pt-8 border-t border-gray-800">
             <p className="text-gray-400 text-center">
-              © 2024 Service Booking System. All rights reserved.
+              © {new Date().getFullYear()} Service Booking System. All rights
+              reserved.
             </p>
           </div>
         </div>
