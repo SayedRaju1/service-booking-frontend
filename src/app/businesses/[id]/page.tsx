@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-import { Header } from "@/components/ui/header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -57,15 +56,12 @@ export default function BusinessDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <span className="ml-2 text-gray-600">
-              Loading business details...
-            </span>
-          </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <span className="ml-2 text-gray-600">
+            Loading business details...
+          </span>
         </div>
       </div>
     );
@@ -73,17 +69,14 @@ export default function BusinessDetailPage() {
 
   if (error || !business || !businessData?.data) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center py-12">
-            <div className="text-red-600 mb-4">
-              Failed to load business details. Please try again.
-            </div>
-            <Link href="/businesses">
-              <Button>Back to Businesses</Button>
-            </Link>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center py-12">
+          <div className="text-red-600 mb-4">
+            Failed to load business details. Please try again.
           </div>
+          <Link href="/businesses">
+            <Button>Back to Businesses</Button>
+          </Link>
         </div>
       </div>
     );
@@ -115,8 +108,6 @@ export default function BusinessDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Business Header */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
@@ -323,33 +314,33 @@ export default function BusinessDetailPage() {
             </CardContent>
           </Card>
         </div>
-      </div>
 
-      {/* Booking Modal */}
-      <Dialog open={isBookingOpen} onOpenChange={setIsBookingOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader className="flex items-center justify-between">
-            <DialogTitle className="text-2xl font-bold text-gray-900">
-              Book Appointment
-            </DialogTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleBookingClose}
-              className="h-8 w-8 p-0"
-            >
-              ×
-            </Button>
-          </DialogHeader>
-          {selectedService && (
-            <BookingFlow
-              initialServiceId={selectedService}
-              businessId={businessId}
-              onClose={handleBookingClose}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+        {/* Booking Modal */}
+        <Dialog open={isBookingOpen} onOpenChange={setIsBookingOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader className="flex items-center justify-between">
+              <DialogTitle className="text-2xl font-bold text-gray-900">
+                Book Appointment
+              </DialogTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleBookingClose}
+                className="h-8 w-8 p-0"
+              >
+                ×
+              </Button>
+            </DialogHeader>
+            {selectedService && (
+              <BookingFlow
+                initialServiceId={selectedService}
+                businessId={businessId}
+                onClose={handleBookingClose}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
+      </div>
     </div>
   );
 }

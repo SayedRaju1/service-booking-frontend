@@ -5,10 +5,10 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { ArrowLeft, Folder, FileText, ChevronRight } from "lucide-react";
 
-import { Header } from "@/components/ui/header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Header } from "@/components/ui/header";
 import { serviceCategoriesApi } from "@/lib/api/service-categories";
 import { ServiceCategory } from "@/types/api";
 
@@ -105,17 +105,14 @@ export default function CategoryDetailPage() {
 
   if (!category) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center py-12">
-            <div className="text-red-600 mb-4">
-              Category not found. Please try again.
-            </div>
-            <Link href="/categories">
-              <Button>Back to Categories</Button>
-            </Link>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center py-12">
+          <div className="text-red-600 mb-4">
+            Category not found. Please try again.
           </div>
+          <Link href="/categories">
+            <Button>Back to Categories</Button>
+          </Link>
         </div>
       </div>
     );
@@ -128,8 +125,6 @@ export default function CategoryDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
-
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* Breadcrumb Navigation */}
         {/* <div className="mb-6">
