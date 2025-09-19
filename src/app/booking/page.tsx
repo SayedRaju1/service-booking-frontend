@@ -2,10 +2,8 @@
 
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
-import { Header } from "@/components/ui/header";
 import { Button } from "@/components/ui/button";
 import { BookingFlow } from "@/components/booking/booking-flow";
 
@@ -17,7 +15,6 @@ function BookingPageContent() {
   if (!serviceId || !businessId) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Header />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center py-12">
             <div className="text-red-600 mb-4">
@@ -35,19 +32,7 @@ function BookingPageContent() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Back Button */}
-        <div className="mb-6">
-          <Link href={`/services/${serviceId}`}>
-            <Button variant="ghost" className="flex items-center gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              Back to Service
-            </Button>
-          </Link>
-        </div>
-
         {/* Booking Flow */}
         <BookingFlow initialServiceId={serviceId} businessId={businessId} />
       </div>
@@ -60,7 +45,6 @@ export default function BookingPage() {
     <Suspense
       fallback={
         <div className="min-h-screen bg-gray-50">
-          <Header />
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="max-w-2xl mx-auto text-center">
               <h2 className="text-2xl font-bold text-gray-900 mb-2">

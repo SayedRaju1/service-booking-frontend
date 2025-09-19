@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Building2 } from "lucide-react";
 
-import { Header } from "@/components/ui/header";
 import { BusinessCard } from "@/components/business/business-card";
 import { SearchFilters } from "@/components/business/search-filters";
 import { businessApi } from "@/lib/api/business";
@@ -95,8 +94,6 @@ export default function BusinessesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Header */}
         <div className="mb-8">

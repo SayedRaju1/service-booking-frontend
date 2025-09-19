@@ -197,24 +197,13 @@ export function BookingFlow({
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => router.back()}
-                className="flex items-center gap-2"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back
-              </Button>
-              <div>
-                <h1 className="text-xl font-semibold text-gray-900">
-                  Book Appointment
-                </h1>
-                <p className="text-sm text-gray-600">
-                  Step {currentStepIndex + 1} of {stepInfo.length}
-                </p>
-              </div>
+            <div>
+              <h1 className="text-xl font-semibold text-gray-900">
+                Book Appointment
+              </h1>
+              <p className="text-sm text-gray-600">
+                Step {currentStepIndex + 1} of {stepInfo.length}
+              </p>
             </div>
 
             {/* Progress Bar */}
@@ -261,7 +250,7 @@ export function BookingFlow({
 
                 {/* Connector line */}
                 {index < stepInfo.length - 1 && (
-                  <div className="mx-4 w-8 h-0.5 bg-gray-200" />
+                  <div className="mx-4 w-3 sm:w-8 h-0.5 bg-gray-200" />
                 )}
               </div>
             ))}

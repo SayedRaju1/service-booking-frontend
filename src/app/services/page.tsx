@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Scissors, Search, Filter } from "lucide-react";
 
-import { Header } from "@/components/ui/header";
 import { ServiceCard } from "@/components/services/service-card";
 import { servicesApi } from "@/lib/api/services";
 import { serviceCategoriesApi } from "@/lib/api/service-categories";
@@ -100,8 +99,6 @@ export default function ServicesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Header */}
         <div className="mb-8">

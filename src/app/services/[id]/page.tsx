@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-import { Header } from "@/components/ui/header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -64,23 +63,17 @@ export default function ServiceDetailPage() {
   // Check if service is active
   if (service && service.isActive === false) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center py-12">
-            <div className="text-amber-600 mb-4">
-              <div className="text-lg font-medium mb-2">
-                Service Unavailable
-              </div>
-              <div className="text-sm text-gray-600 mb-4">
-                This service is currently inactive and not available for
-                booking.
-              </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center py-12">
+          <div className="text-amber-600 mb-4">
+            <div className="text-lg font-medium mb-2">Service Unavailable</div>
+            <div className="text-sm text-gray-600 mb-4">
+              This service is currently inactive and not available for booking.
             </div>
-            <Link href="/services">
-              <Button>Back to Services</Button>
-            </Link>
           </div>
+          <Link href="/services">
+            <Button>Back to Services</Button>
+          </Link>
         </div>
       </div>
     );
@@ -88,15 +81,10 @@ export default function ServiceDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <span className="ml-2 text-gray-600">
-              Loading service details...
-            </span>
-          </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <span className="ml-2 text-gray-600">Loading service details...</span>
         </div>
       </div>
     );
@@ -125,35 +113,32 @@ export default function ServiceDetailPage() {
       ?.status;
 
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center py-12">
-            <div className="text-red-600 mb-4">
-              <div className="text-lg font-medium mb-2">
-                {errorStatus === 404
-                  ? "Service not found"
-                  : "Failed to load service details"}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center py-12">
+          <div className="text-red-600 mb-4">
+            <div className="text-lg font-medium mb-2">
+              {errorStatus === 404
+                ? "Service not found"
+                : "Failed to load service details"}
+            </div>
+            <div className="text-sm text-gray-600 mb-4">{errorMessage}</div>
+            {errorStatus && (
+              <div className="text-xs text-gray-500 mb-4">
+                Error Code: {errorStatus}
               </div>
-              <div className="text-sm text-gray-600 mb-4">{errorMessage}</div>
-              {errorStatus && (
-                <div className="text-xs text-gray-500 mb-4">
-                  Error Code: {errorStatus}
-                </div>
-              )}
-            </div>
-            <div className="space-y-3">
-              <Link href="/services">
-                <Button>Back to Services</Button>
-              </Link>
-              <Button
-                variant="outline"
-                onClick={() => window.location.reload()}
-                className="ml-3"
-              >
-                Try Again
-              </Button>
-            </div>
+            )}
+          </div>
+          <div className="space-y-3">
+            <Link href="/services">
+              <Button>Back to Services</Button>
+            </Link>
+            <Button
+              variant="outline"
+              onClick={() => window.location.reload()}
+              className="ml-3"
+            >
+              Try Again
+            </Button>
           </div>
         </div>
       </div>
@@ -163,25 +148,20 @@ export default function ServiceDetailPage() {
   // Check if service data is properly structured (only after successful API call)
   if (serviceData && (!service || !service?._id || !service?.name)) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center py-12">
-            <div className="text-red-600 mb-4">
-              <div className="text-lg font-medium mb-2">
-                Invalid Service Data
-              </div>
-              <div className="text-sm text-gray-600 mb-4">
-                The service data received is incomplete or malformed.
-              </div>
-              <div className="text-xs text-gray-500 mb-4">
-                Received data: {JSON.stringify(serviceData, null, 2)}
-              </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center py-12">
+          <div className="text-red-600 mb-4">
+            <div className="text-lg font-medium mb-2">Invalid Service Data</div>
+            <div className="text-sm text-gray-600 mb-4">
+              The service data received is incomplete or malformed.
             </div>
-            <Link href="/services">
-              <Button>Back to Services</Button>
-            </Link>
+            <div className="text-xs text-gray-500 mb-4">
+              Received data: {JSON.stringify(serviceData, null, 2)}
+            </div>
           </div>
+          <Link href="/services">
+            <Button>Back to Services</Button>
+          </Link>
         </div>
       </div>
     );
@@ -208,18 +188,16 @@ export default function ServiceDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
-        <div className="mb-6">
+        {/* <div className="mb-6">
           <Link href="/services">
             <Button variant="ghost" className="flex items-center gap-2">
               <ArrowLeft className="h-4 w-4" />
               Back to Services
             </Button>
           </Link>
-        </div>
+        </div> */}
 
         {/* Service Header */}
         <div className="bg-white rounded-lg shadow-sm p-6 mb-8">

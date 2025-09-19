@@ -58,7 +58,7 @@ export function Header() {
                 href="/businesses"
                 className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
               >
-                Service Providers
+                Providers
               </Link>
               <Link
                 href="/categories"
@@ -70,7 +70,7 @@ export function Header() {
                 href="/services"
                 className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
               >
-                Browse Services
+                Services
               </Link>
               {isAuthenticated ? (
                 <Link
