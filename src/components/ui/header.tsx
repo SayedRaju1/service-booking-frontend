@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { User, LogOut, Settings, Building2 } from "lucide-react";
+import { User, LogOut, Building2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -120,10 +120,6 @@ export function Header() {
                   >
                     <User className="mr-2 h-4 w-4" />
                     <span>Dashboard</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => router.push("/profile")}>
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Settings</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>
