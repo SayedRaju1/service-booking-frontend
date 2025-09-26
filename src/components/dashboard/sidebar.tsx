@@ -8,7 +8,6 @@ import {
   Home,
   Calendar,
   User,
-  Settings,
   LogOut,
   X,
   ChevronRight,
@@ -66,7 +65,6 @@ const getNavigationByRole = (role: string) => {
           icon: BarChart3,
         },
         { name: "Profile", href: "/dashboard/profile", icon: User },
-        { name: "Settings", href: "/dashboard/settings", icon: Settings },
       ];
 
     case "customer":
@@ -75,7 +73,6 @@ const getNavigationByRole = (role: string) => {
         { name: "Dashboard", href: "/dashboard", icon: Home },
         { name: "My Bookings", href: "/dashboard/bookings", icon: Calendar },
         { name: "Profile", href: "/dashboard/profile", icon: User },
-        { name: "Settings", href: "/dashboard/settings", icon: Settings },
       ];
   }
 };

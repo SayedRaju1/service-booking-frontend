@@ -93,27 +93,27 @@ function BookingSuccessContent() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="max-w-2xl mx-auto">
           <BookingSuccess
-              booking={{
-                _id: booking._id,
-                appointmentDate: booking.appointmentDate,
-                appointmentTime: new Date(
-                  booking.appointmentDate
-                ).toLocaleTimeString("en-US", {
-                  hour: "numeric",
-                  minute: "2-digit",
-                  hour12: true,
-                }),
-                totalAmount: booking.totalPrice,
-                notes: booking.notes,
-              }}
-              service={{
-                name: booking.service.name,
-                duration: booking.service.duration,
-              }}
-              business={{
-                name: booking.business.name,
-                address: booking.business.address,
-              }}
+            booking={{
+              _id: booking._id,
+              appointmentDate: booking.appointmentDate,
+              appointmentTime: new Date(
+                booking.appointmentDate
+              ).toLocaleTimeString("en-US", {
+                hour: "numeric",
+                minute: "2-digit",
+                hour12: true,
+              }),
+              totalAmount: booking.totalPrice,
+              notes: booking.notes,
+            }}
+            service={{
+              name: booking.service.name,
+              duration: booking.service.duration,
+            }}
+            business={{
+              name: booking.business.name,
+              address: booking.business.address,
+            }}
           />
         </div>
       </div>
@@ -129,11 +129,9 @@ function BookingSuccessContent() {
           Booking Not Found
         </h2>
         <p className="text-gray-600">
-          The booking details could not be found. Please check your booking
-          ID.
+          The booking details could not be found. Please check your booking ID.
         </p>
       </div>
-    </div>
     </div>
   );
 }
@@ -148,9 +146,7 @@ export default function BookingSuccessPage() {
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
               Loading...
             </h2>
-            <p className="text-gray-600">
-              Please wait while we load the page.
-            </p>
+            <p className="text-gray-600">Please wait while we load the page.</p>
           </div>
         </div>
       }
