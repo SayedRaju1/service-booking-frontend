@@ -9,7 +9,6 @@ import {
   Star,
   MapPin,
   Phone,
-  ArrowLeft,
   User,
   CheckCircle,
 } from "lucide-react";

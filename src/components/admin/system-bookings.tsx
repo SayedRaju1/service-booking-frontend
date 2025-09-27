@@ -26,14 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Calendar,
-  Clock,
-  User,
-  Eye,
-  DollarSign,
-  CalendarDays,
-} from "lucide-react";
+import { Calendar, Clock, User, Eye, CalendarDays } from "lucide-react";
 import { adminApi, AdminBooking } from "@/lib/api/admin";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -247,22 +240,6 @@ export function SystemBookings() {
             ) : (
               <div className="text-2xl font-bold text-blue-600">
                 {stats.today}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            {isLoadingStats ? (
-              <Skeleton className="h-8 w-20" />
-            ) : (
-              <div className="text-2xl font-bold text-green-600">
-                ${stats.revenue.toLocaleString()}
               </div>
             )}
           </CardContent>

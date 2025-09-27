@@ -1,15 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Calendar,
-  Clock,
-  Users,
-  DollarSign,
-  TrendingUp,
-  Plus,
-  Settings,
-} from "lucide-react";
+import { Calendar, Clock, Users, Plus, Settings } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -76,22 +68,6 @@ export default function BusinessDashboardPage() {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">This Week</p>
                 <p className="text-2xl font-bold text-gray-900">24</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-yellow-100 rounded-lg">
-                <DollarSign className="h-6 w-6 text-yellow-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">
-                  Revenue (Month)
-                </p>
-                <p className="text-2xl font-bold text-gray-900">$2,450</p>
               </div>
             </div>
           </CardContent>
@@ -200,33 +176,7 @@ export default function BusinessDashboardPage() {
       </div>
 
       {/* Analytics */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        {/* Revenue Chart */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              Revenue Overview
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">This Month</span>
-                <span className="font-semibold text-green-600">+12.5%</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Last Month</span>
-                <span className="font-semibold text-gray-900">$2,180</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">This Month</span>
-                <span className="font-semibold text-gray-900">$2,450</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
+      <div className="grid grid-cols-1 lg:grid-cols-1 gap-8 mb-8">
         {/* Popular Services */}
         <Card>
           <CardHeader>
