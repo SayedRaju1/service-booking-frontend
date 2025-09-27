@@ -2,15 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import {
-  MapPin,
-  Clock,
-  Phone,
-  Mail,
-  Globe,
-  Calendar,
-  Award,
-} from "lucide-react";
+import { MapPin, Clock, Phone, Mail, Globe, Award } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -94,11 +86,6 @@ export default function BusinessDetailPage() {
       other: "bg-gray-100 text-gray-800",
     };
     return colors[category] || colors.other;
-  };
-
-  const handleBookNow = (serviceId: string) => {
-    setSelectedService(serviceId);
-    setIsBookingOpen(true);
   };
 
   const handleBookingClose = () => {

@@ -7,8 +7,6 @@ import {
   Building,
   Users,
   Calendar,
-  DollarSign,
-  TrendingUp,
   Star,
   Loader2,
   AlertCircle,
@@ -20,7 +18,6 @@ import { staffApi } from "@/lib/api/staff";
 import { bookingsApi } from "@/lib/api/bookings";
 import { useRouter } from "next/navigation";
 import { PopulatedBooking } from "@/types/api";
-import Link from "next/link";
 
 export function ServiceProviderOverview() {
   const { user } = useAuthStore();
@@ -75,16 +72,6 @@ export function ServiceProviderOverview() {
   const totalServices = servicesData?.data?.services?.length || 0;
   const totalStaff = staffData?.data?.staff?.length || 0;
   const totalBookings = bookingsData?.data?.bookings?.length || 0;
-
-  // Calculate revenue (sum of all completed bookings)
-  const totalRevenue =
-    bookingsData?.data?.bookings
-      ?.filter((booking: PopulatedBooking) => booking.status === "completed")
-      ?.reduce(
-        (sum: number, booking: PopulatedBooking) =>
-          sum + (booking.totalPrice || 0),
-        0
-      ) || 0;
 
   // Calculate average rating
   const averageRating = businessData?.data?.business?.rating || 0;
@@ -237,19 +224,6 @@ export function ServiceProviderOverview() {
             <p className="text-xs text-muted-foreground">All time bookings</p>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground">
-              From completed bookings
-            </p>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Additional Stats */}
@@ -274,7 +248,7 @@ export function ServiceProviderOverview() {
             <CardTitle className="text-sm font-medium">
               Business Status
             </CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <Building className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
