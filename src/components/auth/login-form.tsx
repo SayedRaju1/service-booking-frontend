@@ -22,6 +22,30 @@ import { authApi } from "@/lib/api/auth";
 import { loginSchema, type LoginFormData } from "@/lib/validations/auth";
 import { useAuthStore } from "@/stores/auth";
 
+interface DemoCredentials {
+  role: string;
+  email: string;
+  password: string;
+}
+
+const DEMO_CREDENTIALS: DemoCredentials[] = [
+  {
+    role: "Admin",
+    email: "admin@servicebooking.com",
+    password: "password123",
+  },
+  {
+    role: "Business Owner",
+    email: "lisa.anderson@beautysalon.com",
+    password: "password123",
+  },
+  {
+    role: "Customer",
+    email: "sheldon.Cooper@customer.com",
+    password: "Password123",
+  },
+];
+
 export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
@@ -32,6 +56,7 @@ export function LoginForm() {
     handleSubmit,
     formState: { errors, isSubmitting },
     setError,
+    setValue,
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
   });
@@ -55,6 +80,12 @@ export function LoginForm() {
 
   const onSubmit = (data: LoginFormData) => {
     loginMutation.mutate(data);
+  };
+
+  const handleCopyCredentials = (email: string, password: string) => {
+    // Populate the form fields
+    setValue("email", email);
+    setValue("password", password);
   };
 
   return (
@@ -120,6 +151,28 @@ export function LoginForm() {
                 {errors.root.message}
               </div>
             )}
+
+            <div className="space-y-2">
+              <p className="text-xs text-gray-500 text-center">
+                Test Credentials:
+              </p>
+              <div className="flex gap-2">
+                {DEMO_CREDENTIALS.map((cred) => (
+                  <Button
+                    key={cred.role}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 text-xs"
+                    onClick={() =>
+                      handleCopyCredentials(cred.email, cred.password)
+                    }
+                  >
+                    {cred.role}
+                  </Button>
+                ))}
+              </div>
+            </div>
 
             <Button
               type="submit"
